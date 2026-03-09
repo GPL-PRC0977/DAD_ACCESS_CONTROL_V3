@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Select Employee{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4 full-height-page">
+
+    <!-- Header -->
+    <div class="row align-items-center g-3 mb-3 border-bottom flex-shrink-0">
+        <div class="col-12 col-md-4">
+            <h4 class="mb-0" style="color: #0b4486;">
+                <i class="bi bi-people-fill me-2"></i>Select Employee
+            </h4>
+        </div>
+        <div class="col-12 col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 rounded-end-pill"
+                    placeholder="Search existing user...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div id="scrollContainer" class="table-scroll">
+        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 11px">
+            <thead class="table-light" style="position: sticky; top: 0; z-index: 2;">
+                <tr>
+                    <th></th>
+                    <th>HCM ID</th>
+                    <th>FIRST NAME</th>
+                    <th>LAST NAME</th>
+                    <th>MIDDLE NAME</th>
+                    <th>EMPLOYEE EMAIL</th>
+                    <th>SBU</th>
+                    <th>POSITION</th>
+                    <th>DEPARTMENT</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody id="employeeTableBody"></tbody>
+        </table>
+        <div id="loadMoreSentinel" class="text-center py-2" style="display:none;">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            Loading more employees...
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        let pageNumber = 1;
+        const pageSize = 20;
+        let loading = false;
+        let hasMore = true;
+
+        const scrollContainer = document.getElementById("scrollContainer");
+        const sentinel = document.getElementById("loadMoreSentinel");
+
+        async function loadEmployees() {
+            if (loading || !hasMore) return;
+
+            loading = true;
+            sentinel.style.display = "block";
+
+            try {
+                const response = await fetch("/load_employees", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        page_number: pageNumber,
+                        page_size: pageSize
+                    })
+                });
+
+                const result = await response.json();
+                const data = result.data || result;
+
+                if (!data || data.length === 0) {
+                    hasMore = false;
+                    sentinel.style.display = "none";
+                    return;
+                }
+
+                if (data.length < pageSize) {
+                    hasMore = false;
+                }
+
+                const tbody = document.getElementById("employeeTableBody");
+
+                data.forEach(emp => {
+                    const row = `
+          <tr>
+            <td class="text-center" style="width:40px">
+              <i class="bi bi-person-fill"></i>
+            </td>
+            <td>${emp.EmployeeID}</td>
+            <td>${emp.FirstName}</td>
+            <td>${emp.LastName}</td>
+            <td>${emp.MiddleName || ""}</td>
+            <td>${emp.EmployeeEmail}</td>
+            <td>${emp.CostCode}</td>
+            <td>${emp.Position}</td>
+            <td>${emp.Department}</td>
+            <td class="text-center" style="width:80px">
+              <button class="btn btn-sm btn-outline-secondary rounded-pill">
+                Select
+              </button>
+            </td>
+          </tr>
+        `;
+                    tbody.insertAdjacentHTML("beforeend", row);
+                });
+
+                pageNumber++;
+
+            } catch (error) {
+                console.error("Error loading employees:", error);
+            }
+
+            loading = false;
+            sentinel.style.display = "none";
+        }
+
+        // initial load
+        loadEmployees();
+
+        // IntersectionObserver
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadEmployees();
+                }
+            });
+        }, {
+            root: scrollContainer,
+            rootMargin: "0px",
+            threshold: 1.0
+        });
+
+        observer.observe(sentinel);
+    });
+</script>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,164 @@
+/* .btn-pro-white {
+    background-image: linear-gradient(white, #fff 6%, #f0f0f0);
+    filter: none;
+    border: 1px solid #cfcece;
+} */
+
+/* .btn-pro-white {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+} */
+
+.btn-pro-white {
+  background-image: linear-gradient(
+    var(--bs-body-bg),
+    var(--bs-body-bg) 6%,
+    var(--bs-secondary-bg)
+  );
+  color: var(--bs-body-color);
+  border: 1px solid rgb(227, 227, 227) !important;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  filter: none;
+}
+.btn-pro-white:hover {
+  background-image: linear-gradient(
+    var(--bs-body-bg),
+    var(--bs-body-bg) 6%,
+    var(--bs-secondary-bg)
+  );
+  color: var(--bs-body-color);
+  border: 1px solid lightgray !important;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  filter: none;
+}
+.bg-custom-light {
+  background-color: var(--bs-body-bg) !important;
+  border-top: 1px solid var(--bs-border-color) !important;
+  border-bottom: 1px solid var(--bs-border-color) !important;
+}
+/* Default to light mode */
+.dark-mode-visible {
+  display: none !important;
+}
+.dark-mode-hidden {
+  display: inline !important;
+}
+
+/* When Bootstrap dark theme is active */
+[data-bs-theme="dark"] .dark-mode-visible {
+  display: inline !important;
+}
+[data-bs-theme="dark"] .dark-mode-hidden {
+  display: none !important;
+}
+.corporate-blue-bg {
+  background: linear-gradient(180deg, #0b4486, #2a2a86) !important;
+}
+.btn-close.white-close {
+  filter: invert(1) grayscale(100%) brightness(200%) !important;
+}
+
+/************* Custom CSS *************/
+/* CSS for button inside a textbox */
+.search-hcm-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-hcm-input-container input {
+  flex-grow: 1;
+}
+
+.search-hcm-button {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.bi-exclamation-triangle-fill {
+  color: #ff8c00;
+}
+
+/* CSS design for read-only textboxes */
+input[type="text"]:read-only {
+  background-color: #f0f0f0; /* A light grey color */
+  border: 1px solid #ccc; /* A subtle border */
+  color: #555; /* Dark grey text color */
+  cursor: default; /* Change the cursor to a default arrow */
+}
+
+/* Type 2 */
+.search-container {
+  position: relative; /* This is the key for positioning the button */
+  display: inline-block;
+  /* width: 365px; */
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 40px 10px 10px; /* Add right padding to make space for the button */
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.search-button {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+.navbar-custom {
+  background-color: #041b38;
+}
+
+.nav-link {
+  color: #ffff !important;
+}
+
+.active-badge {
+  background-color: rgb(14 181 12) !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  border-radius: 10px;
+  color: #ffffff;
+}
+.inactive-badge {
+  background-color: #dc3545 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  border-radius: 10px;
+  color: #ffffff;
+}
+.action-dots {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.action-dots:hover {
+  background-color: #cfcccc;
+  padding: 6px;
+  border-radius: 50%;
+}

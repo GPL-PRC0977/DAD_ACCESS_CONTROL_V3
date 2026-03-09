@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Access Control Center Home{% endblock %}
+
+{% block content%}
+
+<div class="container-fluid mt-4">
+
+  <div class="row align-items-center g-3 mb-3 border-bottom pb-3">
+
+    <!-- Title -->
+    <div class="col-12 col-md-4">
+      <h4 class="mb-0" style="color: #0b4486;">Welcome to the Access Control Center</h4>
+    </div>
+
+    <div class="col-12 col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" class="form-control border-start-0 rounded-end-pill" id="searchApplication"
+          placeholder="Search application name by typing keywords...">
+      </div>
+    </div>
+
+    <div class="col-12 col-md-3 text-md-end">
+      <a href="{{ url_for('index',refresh='home') }}" class="btn btn-outline-success rounded-pill ms-2">
+        <i class="bi bi-arrow-clockwise me-2"></i>Refresh Dashboard
+      </a>
+      <a href="{{ url_for('enroll_application') }}" class="btn btn-outline-primary rounded-pill ms-2">
+        <i class="bi bi-plus-lg me-2"></i>Add New Application
+      </a>
+    </div>
+  </div>
+
+  <table class="table table-hover">
+    <thead class="table-light" style="border-bottom: solid 0.5px rgb(221, 220, 220) !important;">
+      <tr>
+        <th></th>
+        <th style="max-width: 400px; width: 400px;">Application Name</th>
+        <th style="max-width: 750px; width: 750px;">Application URL<i class="bi bi-link-45deg ms-2"></i></th>
+        <th>Owner</th>
+        <th class="text-center">Total Users</th>
+        <th class="text-center" style="width: 100px;">Status</th>
+        <th class="text-center">Date Created</th>
+        <th class="text-center" style="width: 50px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if home_dashboard_data %}
+      {% for app in home_dashboard_data %}
+      <tr>
+        <td class="text-center align-middle" style="width: 50px;">
+          <i class="bi bi-windows" style="font-size: 25px;color: #0b4486;"></i>
+        </td>
+        <td>
+          <strong>{{ app.app_name }}</strong>
+          <br>
+          <small class="text-muted">ID: {{ app.app_id }}</small>
+        </td>
+        <td class="align-middle text-wrap">
+          <span id="url-{{ loop.index }}">
+            {{ app.app_url }}
+          </span>
+
+          <i class="bi bi-clipboard ms-2 text-primary" role="button" style="cursor:pointer;" title="Copy to clipboard"
+            onclick="copyToClipboard('{{ app.app_url }}', this)">
+          </i>
+        </td>
+        <td class="align-middle">{{ app.app_owner }}</td>
+        <td class="align-middle text-center">{{ app.user_count }}</td>
+        <td class="align-middle text-center"><span
+            class="{% if app.status %}active-badge{% else %}inactive-badge{% endif %}">{{ 'Active' if
+            app.status else 'Inactive' }}</span></td>
+        <td class="align-middle text-center">{{ app.date_created }}</td>
+        <td class="text-center align-middle">
+          <div class="dropdown action-dots">
+            <button class="btn action-dots p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              <i class="bi bi-three-dots-vertical text-secondary" style="font-size: 20px;"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                {% if app.status %}
+                <a class="dropdown-item"
+                  href="{{ url_for('enroll_user_home', app_id=app.app_id,app_name=app.app_name,app_url=app.app_url) }}"><i
+                    class="bi bi-person-gear text-secondary me-2"></i> Manage Users</a>
+                {% else %}
+                <span class="dropdown-item text-danger" style="cursor: not-allowed;"><i
+                    class="bi bi-person-x text-secondary me-2 text-danger"></i> Cannot Enroll User</span>
+                {% endif %}
+
+              </li>
+              <li><a class="dropdown-item"
+                  href="{{ url_for('manage_application', app_id=app.app_id,app_name=app.app_name,app_url=app.app_url) }}"><i
+                    class="bi bi-pencil-square text-secondary me-2"></i> View / Edit
+                  Application
+                  Details</a></li>
+              <li><a class="dropdown-item" href="#"><i class="bi bi-trash3 me-2"></i> Delete
+                  Application</a></li>
+            </ul>
+
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="refreshNotif" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="refreshNotifLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-body text-center py-5">
+        <div class="mb-4">
+          <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center"
+            style="width: 80px; height: 80px;">
+            <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <h5 class="fw-semibold mb-2">Refreshing Dashboard</h5>
+        <p class="text-muted mb-0 small">
+          Please wait while we update your data...
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const refreshNotif = new bootstrap.Modal(document.getElementById('refreshNotif'));
+  const btnRefresh = document.querySelector('a[href="{{ url_for("index", refresh="home") }}"]');
+
+  btnRefresh.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    refreshNotif.show();
+    setTimeout(() => {
+      window.location.href = this.href;
+    }, 800);
+  });
+</script>
+
+<script>
+  document.getElementById('searchApplication').addEventListener('input', function () {
+
+    const searchTerm = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('table tbody tr');
+
+    rows.forEach(row => {
+
+      const appName = row.children[1].innerText.toLowerCase();   // Application Name column
+      const appUrl = row.children[2].innerText.toLowerCase();   // URL column
+      const appId = row.children[1].innerText.toLowerCase();   // Includes ID in small tag
+
+      if (
+        appName.includes(searchTerm) ||
+        appUrl.includes(searchTerm) ||
+        appId.includes(searchTerm)
+      ) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+
+    });
+
+  });
+</script>
+
+
+{% endblock %}

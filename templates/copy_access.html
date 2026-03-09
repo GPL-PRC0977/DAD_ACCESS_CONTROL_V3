@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}Copy Access Wizard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <div class="row align-items-center g-3 mb-4 border-bottom pb-3">
+        <div class="col-12 col-md-6">
+            <h4 class="mb-0" style="color: #0b4486;">
+                <i class="bi bi-magic me-2"></i>Copy Access Wizard
+            </h4>
+        </div>
+        <div class="col-12 col-md-6 text-md-end">
+            <a href="{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}"
+                class="btn btn-outline-secondary rounded-pill shadow-sm">
+                <i class="bi bi-x-lg me-2"></i>Cancel
+            </a>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills nav-justified mb-4" id="wizardTab" role="tablist">
+        <li class="nav-item px-1">
+            <button class="nav-link active rounded-pill" id="step1-tab" type="button" onclick="goToStep(1)">1. Ticket
+                Info</button>
+        </li>
+        <li class="nav-item px-1">
+            <button class="nav-link rounded-pill" id="step2-tab" type="button" onclick="validateStep1()">2. User Info &
+                Search</button>
+        </li>
+        <li class="nav-item px-1">
+            <button class="nav-link rounded-pill" id="step3-tab" type="button" onclick="validateStep2()">3. Final
+                Summary</button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white border rounded-4 p-4 shadow-sm" id="wizardTabContent">
+        <div class="tab-pane fade show active" id="step1" role="tabpanel">
+            <div class="row justify-content-center py-5">
+                <div class="col-md-6 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-ticket-perforated-fill display-1 text-primary opacity-25"></i>
+                    </div>
+                    <h5>Enter Audit Information</h5>
+                    <p class="text-muted small">Please provide the Manage Engine ticket number associated with this
+                        request to proceed.</p>
+                    <div class="text-start mt-4">
+                        <label for="copyToEmployeeTicket" class="form-label fw-bold">Source Ticket # <span
+                                class="text-danger">*</span></label>
+                        <input type="text" id="copyToEmployeeTicket"
+                            class="form-control form-control-lg text-center shadow-sm"
+                            placeholder="Enter ME ticket number..." value="{{ request.args.get('ticket_num', '') }}">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-end pt-3">
+                <button type="button" class="btn btn-primary px-4 rounded-pill" onclick="validateStep1()">
+                    Next <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="step2" role="tabpanel">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 border rounded-3 bg-light shadow-sm h-100">
+                        <div class="text-muted small mb-1"><strong>Source Application:</strong></div>
+                        <div class="fw-bold fs-5 text-secondary"><i class="bi bi-windows me-2 text-primary"></i>{{
+                            app_name }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border rounded-3 bg-light shadow-sm h-100">
+                        <div class="text-muted small mb-1"><strong>User Access Source (From):</strong></div>
+                        <div class="fw-bold fs-5"><i class="bi bi-person-circle me-2 text-primary"></i><span
+                                id="txt_source_email">{{ user_email }}</span></div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <!-- <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card border-primary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="mb-3">Search Target Recipient</h5>
+                            <div class="input-group mb-3 mt-4">
+                                <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 rounded-end-pill shadow-none"
+                                    id="employeeSearch" placeholder="Input ID and press Enter ↵ to search">
+                            </div>
+                            {% if emp_email %}
+                            <div
+                                class="alert alert-success border-0 rounded-3 d-flex align-items-center justify-content-center mt-3">
+                                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                                <div><strong>Selected:</strong> {{ emp_full_name }} ({{ emp_email }})</div>
+                            </div>
+                            <input type="hidden" id="copyToEmployeeEmail" value="{{ emp_email }}">
+                            {% else %}
+                            <input type="hidden" id="copyToEmployeeEmail" value="">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bold mb-1">Search Target Recipient</h5>
+                            <p class="text-muted small mb-4">Enter the Employee ID of the person receiving access</p>
+
+                            <div class="input-group mb-2 mt-2">
+                                <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text"
+                                    class="form-control bg-light border-start-0 rounded-end-pill shadow-none py-2"
+                                    id="employeeSearch" placeholder="Input ID and press Enter ↵ to search">
+                            </div>
+
+                            {% if emp_email %}
+                            <div class="mt-4 p-3 rounded-4 border bg-success bg-opacity-10 d-flex align-items-center animate__animated animate__fadeIn"
+                                style="border: 1px dashed #198754 !important;">
+                                <div class="bg-success rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 45px; height: 45px;">
+                                    <i class="bi bi-person-check-fill text-white fs-5"></i>
+                                </div>
+                                <div class="text-start ms-3">
+                                    <div class="text-dark fw-bold mb-0">{{ emp_full_name }}</div>
+                                    <div class="text-muted small">{{ emp_email }}</div>
+                                </div>
+                                <div class="ms-auto">
+                                    <span class="badge rounded-pill bg-success px-3"
+                                        style="font-size: 12px;">Selected</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="copyToEmployeeEmail" value="{{ emp_email }}">
+                            {% else %}
+                            <div class="mt-3 py-3 opacity-50">
+                                <i class="bi bi-person-plus text-muted display-6"></i>
+                                <p class="small text-muted mt-2">No user selected</p>
+                            </div>
+                            <input type="hidden" id="copyToEmployeeEmail" value="">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 d-flex justify-content-between pt-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" onclick="goToStep(1)">
+                    <i class="bi bi-arrow-left me-2"></i>Back
+                </button>
+                <button type="button" class="btn btn-primary px-4 rounded-pill" onclick="validateStep2()">
+                    Review <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="step3" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <i class="bi bi-file-earmark-check-fill display-4 text-success opacity-50 mb-3"></i>
+                    <h4 class="mb-4">Review & Confirm</h4>
+                    <div class="list-group shadow-sm mb-4 text-start">
+                        <div class="list-group-item d-flex justify-content-between p-3">
+                            <span class="text-muted">Application:</span>
+                            <span class="fw-bold" id="lbl_app_name">{{ app_name }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between p-3">
+                            <span class="text-muted">Ticket Number:</span>
+                            <span class="fw-bold" id="sum_ticket"></span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between p-3 bg-light">
+                            <span class="text-muted">From (Source):</span>
+                            <span class="fw-bold text-primary" id="lbl_source_email">{{ user_email }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between p-3 bg-success bg-opacity-10">
+                            <span class="text-muted">To (Target):</span>
+                            <span class="fw-bold text-success" id="lbl_destination_email">{{ emp_email }}</span>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle text-danger mb-2 d-block fs-3"></i>
+                        Please verify the target user and application details.
+                        <span class="text-danger fw-bold d-block">Note: This action will completely override the target
+                            user's
+                            existing permissions.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 d-flex justify-content-between pt-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" onclick="goToStep(2)">
+                    <i class="bi bi-arrow-left me-2"></i>Back
+                </button>
+                <button type="button" class="btn btn-success px-5 rounded-pill shadow" id="btn_copy_access"
+                    onclick="copyAccess()">
+                    <i class="bi bi-clipboard-check-fill me-2"></i>Confirm & Copy Access
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <!-- <div class="modal-header border-0 bg-warning bg-opacity-10">
+                <h5 class="modal-title fw-semibold text-dark"><i
+                        class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Action Required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div> -->
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-shield-exclamation display-3 text-warning mb-3"></i>
+                <h4 class="fw-bold text-dark">Missing Information</h4>
+                <p id="validationMessage" class="text-muted px-3"></p>
+            </div>
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold"
+                    data-bs-dismiss="modal">Got it</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sameUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4 text-center py-4">
+            <i class="bi bi-exclamation-octagon-fill display-4 text-warning mb-3"></i>
+            <h4 class="fw-bold">Invalid Selection</h4>
+            <p class="px-3">Source and Destination users cannot be the same person.</p>
+            <!-- <button type="button" class="btn btn-warning rounded-pill px-4" data-bs-dismiss="modal">Select Different
+                User</button> -->
+            <div class="d-grid gap-2 col-3 mx-auto mt-4">
+                <button type="button" class="btn btn-light border rounded-pill fw-semibold" data-bs-dismiss="modal">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userNotFoundModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center py-5 px-3">
+            <div class="mb-3">
+                <i class="bi bi-person-x-fill display-4 text-danger opacity-75"></i>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-2">Employee Not Found</h5>
+            <p class="text-muted small mb-4">The ID you entered does not match our records.<br>Please check and try
+                again.</p>
+
+            <div class="d-grid gap-2 col-6 mx-auto">
+                <button type="button" class="btn btn-light border rounded-pill fw-semibold" data-bs-dismiss="modal">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="refreshNotif" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center py-5">
+            <img src="{{ url_for('static', filename='images/search2.gif') }}" style="width: 50px; margin: 0 auto;"
+                class="mb-3">
+            <h5>Searching Employee...</h5>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorModal2" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center py-5 px-3">
+            <div class="mb-3">
+                <i class="bi bi-exclamation-triangle-fill display-4 text-danger opacity-75"></i>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-2">Error Copying Access</h5>
+            <p class="text-muted small mb-4">
+                <span id="errMsg">An unexpected error occurred. Please try again.</span>
+            </p>
+
+            <div class="d-grid gap-2 col-6 mx-auto">
+                <button type="button" class="btn btn-light border rounded-pill fw-semibold" data-bs-dismiss="modal">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalSuccess" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center py-5 px-3">
+            <div class="mb-3">
+                <i class="bi bi-check-circle-fill display-4 text-success opacity-75"></i>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-2">Success!</h5>
+            <p class="text-muted small mb-4">
+                <span id="successMsg">The access has been successfully duplicated.</span>
+            </p>
+
+            <div class="d-grid gap-2 col-6 mx-auto">
+                <button type="button" class="btn btn-light border rounded-pill fw-semibold" data-bs-dismiss="modal">
+                    Great, thanks!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="savingModal" tabindex="-1" aria-labelledby="savingModalLabel" aria-hidden="true"
+    data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+
+            <!-- Spinner -->
+            <div class="mb-3">
+                <div class="spinner-border text-primary" role="status" style="width:4rem; height:4rem;">
+                    <span class="visually-hidden">Copying...</span>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h4 class="fw-bold mb-2" id="savingModalTitle" style="color:#0b4486;">Copying user access.</h4>
+
+            <!-- Message -->
+            <p class="text-secondary mb-0 fs-6" id="savingModalMessage">
+                Please wait while the system securely copy user access.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Inactive Link Styling */
+    .nav-pills .nav-link {
+        color: #6c757d !important;
+        /* Grey text */
+        background-color: #f8f9fa;
+        /* Light grey background */
+        border: 1px solid #dee2e6;
+        margin: 0 2px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    /* Active Link Styling */
+    .nav-pills .nav-link.active {
+        color: white !important;
+        background-color: #0b4486 !important;
+        /* Primary Blue */
+        border-color: #0b4486;
+        box-shadow: 0 4px 8px rgba(11, 68, 134, 0.3);
+    }
+
+    /* Hover effect for inactive links */
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: #e9ecef;
+        border-color: #ced4da;
+        color: #495057 !important;
+    }
+</style>
+
+<script>
+    var validationModal = new bootstrap.Modal(document.getElementById("validationModal"));
+    const validationMessage = document.getElementById("validationMessage");
+    function goToStep(stepNumber) {
+        const tabBtns = [document.getElementById('step1-tab'), document.getElementById('step2-tab'), document.getElementById('step3-tab')];
+        const tabPanes = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+        tabBtns.forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === (stepNumber - 1));
+            tabPanes[idx].classList.toggle('show', idx === (stepNumber - 1));
+            tabPanes[idx].classList.toggle('active', idx === (stepNumber - 1));
+        });
+    }
+
+    function validateStep1() {
+        if (!document.getElementById('copyToEmployeeTicket').value.trim()) {
+            // alert("Please enter a ticket number.");
+            validationModal.show();
+            validationMessage.innerText = "Please enter a ticket number.";
+            return;
+        }
+        goToStep(2);
+    }
+
+    function validateStep2() {
+        const targetEmail = document.getElementById('copyToEmployeeEmail').value.trim();
+        const sourceEmail = document.getElementById('txt_source_email').textContent.trim();
+        if (!targetEmail) {
+            // alert("Please search and select a target employee."); 
+            validationModal.show();
+            validationMessage.innerText = "Please search and select a target employee.";
+            return;
+        }
+        if (targetEmail.toLowerCase() === sourceEmail.toLowerCase()) {
+            new bootstrap.Modal(document.getElementById('sameUserModal')).show();
+            return;
+        }
+        document.getElementById('sum_ticket').textContent = document.getElementById('copyToEmployeeTicket').value;
+        goToStep(3);
+    }
+
+    document.getElementById('employeeSearch').addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            let employeeId = this.value.trim();
+            let ticket = document.getElementById('copyToEmployeeTicket').value.trim();
+            if (employeeId) {
+                new bootstrap.Modal(document.getElementById('refreshNotif')).show();
+                window.location.href = `{{ url_for('copy_access_search') }}?employee_id=${encodeURIComponent(employeeId)}&app_id=${encodeURIComponent("{{ app_id }}")}&app_name=${encodeURIComponent("{{ app_name }}")}&app_url=${encodeURIComponent("{{ app_url }}")}&user_email=${encodeURIComponent("{{ user_email }}")}&ticket_num=${encodeURIComponent(ticket)}`;
+            }
+        }
+    });
+
+    function copyAccess() { /* POST Logic here */ }
+
+    window.addEventListener('load', () => {
+        const sourceEmail = "{{ user_email }}".toLowerCase();
+        const targetEmail = "{{ emp_email }}".toLowerCase();
+        if (targetEmail && sourceEmail === targetEmail) {
+            new bootstrap.Modal(document.getElementById('sameUserModal')).show();
+            goToStep(2);
+        } else if (targetEmail) {
+            goToStep(2);
+        }
+        {% if employee_not_found %}
+        new bootstrap.Modal(document.getElementById('userNotFoundModal')).show();
+        goToStep(2);
+        {% endif %}
+    });
+</script>
+
+<script>
+
+    function copyAccess() {
+        const targetEmail = document.getElementById('lbl_destination_email').innerText;
+        const targetName = "{{ emp_full_name }}";
+        const sourceEmail = document.getElementById('lbl_source_email').innerText;
+        const ticketNumber = document.getElementById('sum_ticket').innerText;
+        // const errMsg = new bootstrap.Modal(document.getElementById('errorModal2'));
+        const appId = "{{ app_id }}";
+        const successMsg = new bootstrap.Modal(document.getElementById('modalSuccess'));
+        const copyNotif = new bootstrap.Modal(document.getElementById('savingModal'));
+        var btn = document.getElementById('btn_copy_access');
+
+
+        // if (!targetEmail || !targetName) {
+        //     document.getElementById('errMsg').textContent = 'Please search and select a valid target employee before copying access.';
+        //     errMsg.show();
+        //     return;
+        // }
+
+        // if (sourceEmail.toLowerCase() === targetEmail.toLowerCase()) {
+        //     document.getElementById('errMsg').textContent = 'Source and target employee cannot be the same. Please select a different target employee.';
+        //     errMsg.show();
+        //     return;
+        // }
+
+        // if (!ticketNumber) {
+        //     document.getElementById('errMsg').textContent = 'Please enter the ME ticket number for audit purposes.';
+        //     errMsg.show();
+        //     return;
+        // }
+
+        if (!confirm("Are you sure you want to copy this user access?")) {
+            return;
+        }
+
+        copyNotif.show();
+
+        fetch('/copy_user_access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                source_user_email: sourceEmail,
+                target_user_email: targetEmail,
+                app_id: appId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                copyNotif.hide();
+                document.getElementById('successMsg').innerHTML = `Access permissions copied from <b>${sourceEmail}</b> to <b>${targetEmail}</b>.<br>ME Ticket: <b>${ticketNumber}</b>`;
+                successMsg.show();
+                btn.style.display = 'none';
+            })
+            .catch(error => {
+                document.getElementById('errMsg').textContent = error;
+                errMsg.show();
+                console.error('Error:', error);
+            });
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}Copy Access{% endblock %}
+
+
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+
+
+    <!-- 🔒 TOP SECTION — UNCHANGED -->
+
+    <div class="row align-items-center g-3 mb-3 border-bottom pb-3">
+
+        <div class="col-12 col-md-4">
+
+            <h4 class="mb-0" style="color: #0b4486;">
+
+                <i class="bi bi-people-fill me-2"></i>Copy Access
+
+            </h4>
+
+        </div>
+
+        <div class="col-12 col-md-5">
+
+            <div class="input-group">
+
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+
+                    <i class="bi bi-search text-muted"></i>
+
+                </span>
+
+                <input type="text" class="form-control border-start-0 rounded-end-pill" id="employeeSearch"
+                    placeholder="Input employee ID here and press enter ↵ to search">
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-3 text-md-end">
+
+            <a href="{{ url_for('enroll_user_home', app_id=app_id,app_name=app_name,app_url=app_url) }}"
+                class="btn btn-outline-secondary rounded-pill ms-2 float-end">
+
+                <i class="bi bi-x-lg me-2"></i>Cancel
+
+            </a>
+
+            <!-- <a href="" class="btn btn-outline-primary rounded-pill ms-2 float-end" id="btn_copy_access">
+
+                <i class="bi bi-clipboard-check-fill me-2"></i>Copy Access
+
+            </a> -->
+
+            <button type="button" class="btn btn-outline-primary rounded-pill ms-2 float-end" id="btn_copy_access"
+                onclick="copyAccess()">
+
+                <i class="bi bi-clipboard-check-fill me-2"></i>Copy Access
+
+        </div>
+
+    </div>
+
+
+
+    <!-- CONFIRMATION NOTE -->
+
+    <div class="alert alert-warning mt-4 d-flex align-items-center border-0 rounded-3">
+
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+
+        <div>
+
+            Existing permissions of the target user may be overridden.
+
+            Please review before saving.
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 🔽 MAIN FLOW -->
+
+    <div class="row g-4">
+
+
+
+        <!-- COPY FROM -->
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 rounded-2 shadow-sm h-100">
+
+                <div class="card-body rounded-2" style="background:#f2f3f5;">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="me-3">
+
+                            <i class="bi bi-person-check-fill fs-2 text-primary"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="text-muted small mb-1"><strong>Copy access FROM</strong></div>
+
+                            <div class="fw-semibold fs-5 text-primary">
+
+                                <label id="txt_source_email">{{ user_email }}</label>
+
+                            </div>
+
+                            <small class="text-muted">
+
+                                All assigned permissions will be duplicated
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex align-items-center mt-4">
+
+                        <div class="me-3">
+
+                            <i class="bi bi-windows" style="font-size: 25px;color: #0b4486;"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="text-muted small mb-1"><strong>Source Application Name:</strong></div>
+
+                            <div class="fw-semibold fs-5 text-secondary">
+
+                                {{ app_name }}
+
+                            </div>
+
+                            <small class="text-muted">
+
+                                Access permissions will be copied from this application
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- COPY TO -->
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center mb-3">
+
+                        <i class="bi bi-person-plus-fill fs-2 text-success me-3"></i>
+
+                        <div>
+
+                            <div class="text-muted small"><strong>Copy access TO</strong></div>
+
+                            <div class="fw-semibold">Target Employee</div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <label for="copyToEmployeeEmail" class="form-label">Employee Email</label>
+
+                    {% if emp_email %}
+
+                    <input type="text" id="copyToEmployeeEmail" class="form-control form-control-lg mb-2" readonly
+                        value="{{ emp_email }}">
+
+                    {% else %}
+
+                    <input type="text" id="copyToEmployeeEmail" class="form-control form-control-lg mb-2" readonly>
+
+                    {% endif %}
+
+
+
+                    <label for="copyToEmployeeName" class="form-label">Employee Name</label>
+
+                    {% if emp_full_name %}
+
+                    <input type="text" id="copyToEmployeeName" class="form-control form-control-lg mb-2" readonly
+                        value="{{ emp_full_name }}">
+
+                    {% else %}
+
+                    <input type="text" id="copyToEmployeeName" class="form-control form-control-lg mb-2" readonly>
+
+                    {% endif %}
+
+
+
+                    <label for="copyToEmployeeTicket" class="form-label">Source Ticket #:</label>
+
+                    <input type="text" id="copyToEmployeeTicket" class="form-control form-control-lg mb-2"
+                        placeholder="Enter ME ticket number for audit trail...">
+
+
+
+                    <div class="form-text mt-2">
+
+                        The selected user will receive the same access rights.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal fade" id="refreshNotif" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="refreshNotifLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 shadow-lg rounded-4">
+
+            <div class="modal-body text-center py-5">
+
+                <div class="mb-4">
+
+                    <div class="bg-light bg-opacity-10 shadow-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px;">
+
+                        <img src="{{ url_for('static', filename='images/search2.gif') }}" alt="Loading..."
+                            style="width: 2.5rem; height: 2.5rem;">
+
+                    </div>
+
+                </div>
+
+                <h5 class="fw-semibold mb-2">Searching Employee</h5>
+
+                <p class="text-muted mb-0 small">
+
+                    Please wait while we complete the process...
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content shadow rounded-4 border-0">
+
+
+
+            <!-- Header -->
+
+            <div class="modal-header border-0">
+
+                <h5 class="modal-title fw-semibold" id="alertModalLabel">
+
+                    <i id="modalHeaderIcon" class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+
+                    System Message
+
+                </h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+            </div>
+
+
+
+            <!-- Body -->
+
+            <div class="modal-body text-center">
+
+
+
+                <div class="mb-3">
+
+                    <i id="modalMainIcon" class="bi bi-exclamation-triangle-fill display-4 text-danger"></i>
+
+                </div>
+
+
+
+                <h4 id="modalTitle" class="fw-bold mb-2">
+
+                    Action Required
+
+                </h4>
+
+
+
+                <p id="lbl_alert_modal_message" class="text-muted mb-0">
+
+                    <!-- Dynamic message goes here -->
+
+                </p>
+
+
+
+            </div>
+
+
+
+            <!-- Footer -->
+
+            <div class="modal-footer justify-content-center border-0">
+
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal fade" id="errorModal2" tabindex="-1" aria-labelledby="errorModal2Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="errorModal2Label">
+                    <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+                    Oops!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-circle display-4 text-danger"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Error copying access</h4>
+                <p class="text-muted mb-0">
+                    <label id="errMsg"></label>
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="modalSuccess" tabindex="-1" aria-labelledby="modalSuccessLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="modalSuccessLabel">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    Success!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill display-4 text-success"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Access copied successfully!</h4>
+                <p class="text-muted mb-0">
+                    <label id="successMsg"></label>
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="copyingNotif" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="copyingNotifLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 shadow-lg rounded-4">
+
+            <div class="modal-body text-center py-5">
+
+                <div class="mb-4">
+
+                    <div class="bg-light shadow-sm bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px;">
+
+                        <!-- <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+
+                            <span class="visually-hidden">Loading...</span>
+
+                        </div> -->
+
+                        <img src="{{ url_for('static', filename='images/copy.gif') }}" alt="Loading..."
+                            style="width: 2.5rem; height: 2.5rem;">
+
+                    </div>
+
+                </div>
+
+                <h5 class="fw-semibold mb-2">Copying access</h5>
+
+                <p class="text-muted mb-0 small">
+
+                    Please wait while we complete the process...
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    document.getElementById('employeeSearch').addEventListener('keydown', function (event) {
+
+        if (event.key === 'Enter') {
+
+            event.preventDefault();
+
+
+
+            const refreshNotif = new bootstrap.Modal(document.getElementById('refreshNotif'));
+
+
+
+            let employeeId = document.getElementById('employeeSearch').value.trim();
+
+            if (employeeId) {
+
+                refreshNotif.show();
+
+                window.location.href = `{{ url_for('copy_access_search') }}?employee_id=${encodeURIComponent(employeeId)}&app_id=${encodeURIComponent("{{ app_id }}")}&app_name=${encodeURIComponent("{{ app_name }}")}&app_url=${encodeURIComponent("{{ app_url }}")}&user_email=${encodeURIComponent("{{ user_email }}")}`;
+
+            }
+
+        }
+
+    });
+
+
+
+</script>
+
+
+
+<script>
+
+    function copyAccess() {
+        const targetEmail = document.getElementById('copyToEmployeeEmail').value.trim();
+        const targetName = document.getElementById('copyToEmployeeName').value.trim();
+        const sourceEmail = document.getElementById('txt_source_email').textContent.trim();
+        const ticketNumber = document.getElementById('copyToEmployeeTicket').value.trim();
+        const errMsg = new bootstrap.Modal(document.getElementById('errorModal2'));
+        const appId = "{{ app_id }}";
+        const successMsg = new bootstrap.Modal(document.getElementById('modalSuccess'));
+        const copyNotif = new bootstrap.Modal(document.getElementById('copyingNotif'));
+        var btn = document.getElementById('btn_copy_access');
+
+
+        if (!targetEmail || !targetName) {
+            document.getElementById('errMsg').textContent = 'Please search and select a valid target employee before copying access.';
+            errMsg.show();
+            return;
+        }
+
+        if (sourceEmail.toLowerCase() === targetEmail.toLowerCase()) {
+            document.getElementById('errMsg').textContent = 'Source and target employee cannot be the same. Please select a different target employee.';
+            errMsg.show();
+            return;
+        }
+
+        if (!ticketNumber) {
+            document.getElementById('errMsg').textContent = 'Please enter the ME ticket number for audit purposes.';
+            errMsg.show();
+            return;
+        }
+
+        if (!confirm("Are you sure you want to save this user access?")) {
+            return;
+        }
+
+        copyNotif.show();
+
+        fetch('/copy_user_access', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                source_user_email: sourceEmail,
+                target_user_email: targetEmail,
+                app_id: appId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                copyNotif.hide();
+                document.getElementById('successMsg').innerHTML = `Access permissions copied from <b>${sourceEmail}</b> to <b>${targetEmail}</b>.<br>ME Ticket: <b>${ticketNumber}</b>`;
+                successMsg.show();
+                btn.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+</script>
+
+
+
+<script>
+
+    {% if employee_not_found %}
+
+    var myModal = new bootstrap.Modal(document.getElementById('errorModal'));
+
+    myModal.show();
+
+    {% endif %}
+
+</script>
+
+{% endblock %}

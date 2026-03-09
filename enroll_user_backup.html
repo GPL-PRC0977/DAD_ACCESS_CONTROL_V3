@@ -1,0 +1,548 @@
+{% block title %}Enroll New User Form{% endblock %}
+
+
+
+{% block content %}
+
+
+
+<div class="container-fluid mt-4">
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header border-0">
+
+                    <h5 class="modal-title" id="errorModalLabel">
+
+                        <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+
+                        Not Found
+
+                    </h5>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                </div>
+
+                <div class="modal-body text-center">
+
+                    <div class="mb-3">
+
+                        <i class="bi bi-person-fill-x display-4 text-danger"></i>
+
+                    </div>
+
+                    <h4 class="fw-bold mb-2">Employee ID not found</h4>
+
+                    <p class="text-muted mb-0">
+
+                        Please make sure the Employee ID is correct and try again.
+
+                    </p>
+
+                </div>
+
+                <div class="modal-footer justify-content-center border-0">
+
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+
+                        Close
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+
+    <div class="row align-items-center g-3 mb-3 border-bottom pb-3">
+
+        <div class="col-12 col-md-4">
+
+            <h4 class="mb-0" style="color: #0b4486;"><i class="bi bi-person-add me-2"></i>Enroll User Form</h4>
+
+        </div>
+
+        <div class="col-12 col-md-5">
+
+            <div class="input-group">
+
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+
+                    <i class="bi bi-search text-muted"></i>
+
+                </span>
+
+                <input type="text" class="form-control border-start-0 rounded-end-pill"
+                    placeholder="Input employee ID here and press enter ↵" id="employeeSearch" name="employee_id">
+
+            </div>
+
+        </div>
+
+        <div class="col-12 col-md-3 text-md-end">
+
+            <a href="{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}"
+                class="btn btn-outline-secondary rounded-pill ms-2 float-end">
+
+                <i class="bi bi-x-lg me-2"></i>Cancel
+
+            </a>
+
+            <a href="{{ url_for('index') }}" id="lnk_btn_save" class="btn btn-outline-primary rounded-pill ms-2">
+
+                <i class="bi bi-floppy me-2"></i>Save & Continue
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="card mt-3 border-0 rounded-3">
+
+        <div class="card-body rounded-3" style="background-color: #e0e9f1;">
+
+            <input type="hidden" id="lbl_app_id" value="{{ app_id }}" />
+
+            <div class="">
+
+                <div class="col d-none"><strong>Application ID: {{ app_id }}</strong></div>
+
+                <div class="col"> Selected Application</div>
+
+                <div><strong><i class="bi bi-windows me-2" style="color: #0b4486;"></i>{{ app_name }}</strong></div>
+
+                <div class="col d-none"> Selected Application URL<strong>{{ app_url }}</strong></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="card mt-3">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-sm-6">
+
+                    <b>User Email</b>
+
+                    <label class="ms-2" for="txt_user_email">(Ex: juan.delacruz@primergrp.com)</label><i
+                        class="text-danger ms-2">*</i>
+
+                    {% if not emp_email == '' %}
+
+                    <input readonly type="text" id="txt_user_email" class="form-control" value="{{ emp_email }}" />
+
+                    {% else %}
+
+                    <input readonly type="text" id="txt_user_email" class="form-control" value="" />
+
+                    {% endif %}
+
+                </div>
+
+                <div class="col-sm-6">
+
+                    <b>Full Name<i class="text-danger">*</i></b>
+
+                    {% if not emp_full_name == '' %}
+
+                    <input readonly type="text" id="txt_full_name" class="form-control" value="{{ emp_full_name }}" />
+
+                    {% else %}
+
+                    <input readonly type="text" id="txt_full_name" class="form-control" value="" />
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+
+                <div class="col-sm-6">
+
+                    <b>Effective From<i class="text-danger ms-2">*</i></b>
+
+                    <input type="date" id="date_effective_from" class="form-control mt-1" />
+
+                </div>
+
+                <div class="col">
+
+                    <b>Effective To<i class="text-danger ms-2">*</i></b>
+
+                    <input type="date" id="date_effective_to" class="form-control mt-1" />
+
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+
+                <div class="col">
+
+                    <i class="bi bi-ticket-perforated-fill me-2"></i>Ticket #:<i class="text-danger ms-2">*</i></b>
+
+                    <input type="text" id="txt_ticket_num" class="form-control  mt-1" value="" />
+
+                </div>
+
+            </div>
+
+            <div class="row mt-3" style="background-color: rgb(232, 235, 235)">
+
+                <div class="col p-1"></div>
+
+            </div>
+
+            <div class="row pt-4">
+
+                <div class="col-sm">
+
+                    <div class="input-group mb-3">
+
+                        <div class="input-group">
+
+                            <span class="input-group-text bg-white border-end-0 rounded-start-pill">
+
+                                <i class="bi bi-search text-muted"></i>
+
+                            </span>
+
+                            <input type="text" class="form-control border-start-0 rounded-end-pill"
+                                placeholder="Search module name here..." id="searchModule">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col">
+
+                    <table class="table table-sm table-hover w-100 table-bordered" id="tbl_modules">
+
+                        <thead>
+
+                            <tr>
+
+                                <th class="d-none">Module ID</th>
+
+                                <th class="ps-2">Module Name</th>
+
+                                <th class="ps-2">Module URL</th>
+
+                                <th>
+
+                                    Effectivity Date (From)
+
+                                </th>
+
+                                <th>
+
+                                    Effectivity Date (To)
+
+                                </th>
+
+                                <th style="width: 200px">
+
+                                    Permission
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% if modules %} {% for module in modules %}
+
+                            <tr>
+
+                                <td class="d-none">{{ module.module_id }}</td>
+
+                                <td class="align-content-center ps-2" style="max-width: 300px; width: 300px">
+
+                                    <b style="color: #0b4486;">{{ module.module_name }}</b>
+
+                                </td>
+
+                                <td class="align-content-center ps-2 text-wrap">
+
+                                    <a href="{{ module.url }}" class="text-secondary" target="_blank">{{ module.url
+
+                                        }}</a>
+
+                                </td>
+
+                                <td>
+
+                                    <input type="date" class="form-control  date-from" />
+
+                                </td>
+
+                                <td>
+
+                                    <input type="date" class="form-control " value="9999-12-31" />
+
+                                </td>
+
+                                <td>
+
+                                    <select class="form-select rounded-2">
+
+                                        <option value="" selected></option>
+
+                                        <option value="Viewer">Viewer</option>
+
+                                        <option value="Editor">Editor</option>
+
+                                    </select>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %} {% endif %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal fade" id="refreshNotif" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="refreshNotifLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content border-0 shadow-lg rounded-4">
+
+            <div class="modal-body text-center py-5">
+
+                <div class="mb-4">
+
+                    <div class="bg-light bg-opacity-10 shadow-sm rounded-circle d-inline-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px;">
+
+                        <img src="{{ url_for('static', filename='images/search2.gif') }}" alt="Loading..."
+                            style="width: 2.5rem; height: 2.5rem;">
+
+                    </div>
+
+                </div>
+
+                <h5 class="fw-semibold mb-2">Searching Employee</h5>
+
+                <p class="text-muted mb-0 small">
+
+                    Please wait while we complete the process...
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    document.getElementById('employeeSearch').addEventListener('keydown', function (event) {
+
+        if (event.key === 'Enter') {
+
+            event.preventDefault();
+
+
+
+            const refreshNotif = new bootstrap.Modal(document.getElementById('refreshNotif'));
+
+
+
+            let employeeId = document.getElementById('employeeSearch').value.trim();
+
+            if (employeeId) {
+
+                refreshNotif.show();
+
+                window.location.href = `{{ url_for('search_employee_id') }}?employee_id=${encodeURIComponent(employeeId)}&app_id=${encodeURIComponent("{{ app_id }}")}&app_name=${encodeURIComponent("{{ app_name }}")}&app_url=${encodeURIComponent("{{ app_url }}")}`;
+
+            }
+
+        }
+
+    });
+
+
+
+    const lnkBtnSave = document.getElementById('lnk_btn_save');
+
+    lnkBtnSave.addEventListener('click', function (e) {
+
+        e.preventDefault();
+
+
+
+        const ticketNum = document.getElementById('txt_ticket_num').value.trim();
+
+        const email = document.getElementById('txt_user_email').value.trim();
+
+        const date_effective_from = document.getElementById('date_effective_from').value;
+
+        const date_effective_to = document.getElementById('date_effective_to').value
+
+
+
+        if (!email) {
+
+            alert('Please provide user email by searching employee ID.');
+
+            document.getElementById('employeeSearch').focus();
+
+            return;
+
+        }
+
+        if (!date_effective_from) {
+
+            alert('Please select the Effective From date.');
+
+            document.getElementById('date_effective_from').focus();
+
+            return;
+
+        }
+
+        if (!date_effective_to) {
+
+            alert('Please select the Effective To date.');
+
+            document.getElementById('date_effective_to').focus();
+
+            return;
+
+        }
+
+        if (!ticketNum) {
+
+            alert('Please provide Manage Engine Ticket #.');
+
+            document.getElementById('txt_ticket_num').focus();
+
+            return;
+
+        }
+
+    });
+
+
+
+</script>
+
+
+
+<script>
+
+    document.getElementById('searchModule').addEventListener('keydown', function (event) {
+
+        const searchTerm = event.target.value.toLowerCase();
+
+        const table = document.getElementById('tbl_modules');
+
+        const rows = table.getElementsByTagName('tr');
+
+
+
+        for (let i = 1; i < rows.length; i++) {
+
+            const cells = rows[i].getElementsByTagName('td');
+
+            let moduleNameCell = cells[1];
+
+
+
+            if (moduleNameCell) {
+
+                const moduleName = moduleNameCell.textContent.toLowerCase();
+
+                if (moduleName.indexOf(searchTerm) > -1) {
+
+                    rows[i].style.display = '';
+
+                } else {
+
+                    rows[i].style.display = 'none';
+
+                }
+
+            }
+
+        }
+
+    });
+
+</script>
+
+
+
+
+
+<script>
+
+    {% if employee_not_found %}
+
+    var myModal = new bootstrap.Modal(document.getElementById('errorModal'));
+
+    myModal.show();
+
+    {% endif %}
+
+</script>
+
+
+
+
+
+{% endblock %}

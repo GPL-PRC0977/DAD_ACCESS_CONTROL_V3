@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+
+{% block title %}Enroll Application{% endblock %}
+
+{% block content %}
+<style>
+    .wizard-step {
+        transition: all 0.3s ease;
+    }
+
+    .step-indicator {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #495057;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .step-indicator.active {
+        background-color: #0b4486;
+        color: #fff;
+    }
+
+    .step-indicator.completed {
+        background-color: #0b4486;
+        color: #fff;
+    }
+
+    input.form-control:focus,
+    textarea.form-control:focus {
+        border-color: #0b4486;
+        box-shadow: 0 0 0 0.2rem rgba(11, 68, 134, 0.25);
+    }
+</style>
+<div class="container-fluid mt-4">
+    <div class="row align-items-center g-3 mb-3 border-bottom pb-3">
+        <div class="col-12 col-md-4">
+            <h4 class="mb-0" style="color: #0b4486;"><i class="bi bi-pencil-square"></i> {% if mode %} {{ mode }} {%
+                else %}
+                Enroll New Application {% endif %}</h4>
+        </div>
+        <div class="col-12 col-md-4">
+        </div>
+        <div class="col-12 col-md-4 text-md-end">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary rounded-pill ms-2 float-end">
+                <i class="bi bi-x-lg me-2"></i>Cancel
+            </a>
+            <!-- <a href="" class="btn btn-outline-primary rounded-pill ms-2 float-end" onclick="submitForm()">
+                <i class="bi bi-floppy me-2"></i>Save Application
+            </a> -->
+            <button type="button" class="btn btn-outline-primary rounded-pill ms-2 float-end" onclick="submitForm()">
+                <i class="bi bi-floppy me-2"></i>{% if mode %} Save Changes {% else %} Save Application {% endif %}
+            </button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body bg-light">
+            <form>
+                <input type="hidden" id="hidden_app_id" value="{% if mode %}{{ app_id }}{% else %}{% endif %}">
+                <input type="hidden" id="function_mode" value="{% if mode %}modify{% else %}save{% endif %}">
+                <!-- <label>{% if mode %}mofify{% else %}save{% endif %}</label> -->
+                <div class="mb-3">
+                    <label for="appName" class="form-label"><strong>Application Name</strong></label>
+                    <input type="text" class="form-control" id="appName" placeholder="Enter application name"
+                        value="{{ app_name | default('',true) }}">
+                </div>
+                <div class="mb-3">
+                    <label for="appURL" class="form-label"><strong>Application URL (Ex:
+                            https://www.anotherapp.com)</strong></label>
+                    <input type="text" class="form-control" id="appURL" placeholder="Enter application URL"
+                        value="{{ app_url | default('',true) }}">
+                </div>
+                <div class="mb-3">
+                    <label for="appDescription" class="form-label"><strong>Application
+                            Description</strong></label>
+                    <textarea class="form-control" id="appDescription" rows="3"
+                        placeholder="Enter a brief description of the application">{{ app_description | default('',true) }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="appOwner" class="form-label"><strong>Owner (Ex: Retail)</strong></label>
+                            <input type="text" class="form-control" id="appOwner" placeholder="Enter owner name"
+                                value="{{ app_owner | default('',true) }}">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="dd_status" class="form-label"><strong>Status</strong></label>
+                            <select class="form-select" id="dd_status">
+                                <option value="False"></option>
+                                <option {% if app_status==True %}selected{% endif %} value="True">Active</option>
+                                <option {% if app_status==False %}selected{% endif %} value="False">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if not mode %}
+    <div class="card mt-3 border-0 rounded-2">
+        <div class="card-body bg-light rounded-2">
+            <strong style="color: #0b4486;">Note: Please add application modules</strong>
+            <i class="bi bi-exclamation-circle float-end text-primary"></i>
+        </div>
+    </div>
+    {% else %}
+    {% if mode %}
+    <hr>
+    <strong class="m-2"><i class="bi bi-grid me-2"></i>Application Modules</strong>
+    {% endif %}
+    {% endif %}
+    <card class="mt-2">
+        <div class="card-body bg-light">
+            <table id="table_modules" class="table table-sm mt-1 table-hover">
+                {% if module %}
+                {% for module_item in module %}
+                <tr>
+                    <td class="col-6 align-middle p-1 border-0">
+                        <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-0"
+                            role="alert">
+                            <div>
+                                <b>Module Name:</b> {{ module_item.module_name }}<br />
+                                <b>URL:</b> {{ module_item.url }}
+                            </div>
+                            <button class="btn btn-sm p-1 ms-auto" onclick="this.closest('tr').remove()"
+                                title="Remove Module">
+                                <i class="bi bi-trash text-dark" style="font-size:18px;"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </div>
+    </card>
+    <div class="card mt-2 mb-3">
+        <div class="card-body bg-light">
+            <div class="row mt-1">
+                <div class="col-5 pe-0">
+                    <strong>Module Name:</strong>
+                    <input type="text" id="txt_module_name" class="form-control mt-1" required />
+                </div>
+                <div class="col-6">
+                    <strong>Link / URL:</strong>
+                    <input type="text" id="txt_link_url" class="form-control mt-1" required />
+                </div>
+                <div class="col ps-0">
+                    <input type="button" class="btn btn-primary rounded-pill mt-4 w-100" value="+ Add"
+                        onclick="addModule()" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header border-0 bg-warning bg-opacity-10">
+                    <h5 class="modal-title" id="alertModalLabel">
+                        <i id="modalHeaderIcon" class="bi bi-exclamation-circle-fill text-danger me-2"></i>
+                        System Message
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i id="modalMainIcon" class="bi bi-exclamation-triangle-fill display-4 text-danger"></i>
+                    </div>
+                    <h5 id="modalTitle" class="fw-bold mb-2">
+                        Action required for the list of missing details below.
+                        </h4>
+                        <p id="lbl_alert_modal_message" class="text-muted mb-0" style="font-size: 17px !important;">
+                        </p>
+                </div>
+
+                <div class="modal-footer justify-content-center border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-shield-exclamation display-3 text-warning mb-3"></i>
+                    <h4 class="fw-bold text-dark mb-4">Missing Information</h4>
+                    <p id="lbl_alert_modal_message" class="text-muted mb-0" style="font-size: 17px !important;">
+                </div>
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold"
+                        data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+
+                <!-- Header -->
+                <div class="modal-header border-0 bg-success bg-opacity-10">
+                    <h5 class="modal-title fw-semibold" id="successModalLabel">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        System Confirmation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <i class="bi bi-check2-circle display-3 text-success"></i>
+                    </div>
+
+                    <h4 class="fw-bold mb-2 text-success">
+                        Application Saved Successfully
+                    </h4>
+
+                    <p class="text-muted mb-0 fs-6">
+                        The application information has been securely stored in the system.
+                        You may proceed with additional configurations or close this window.
+                    </p>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <!-- <button type="button" class="btn btn-success rounded-pill px-4">
+                        View Details
+                    </button> -->
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Enterprise Saving Modal -->
+    <div class="modal fade" id="savingModal" tabindex="-1" aria-labelledby="savingModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+
+                <!-- Spinner -->
+                <div class="mb-3">
+                    <div class="spinner-border text-primary" role="status" style="width:4rem; height:4rem;">
+                        <span class="visually-hidden">Saving...</span>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <h4 class="fw-bold mb-2" id="savingModalTitle" style="color:#0b4486;">Saving Your Application</h4>
+
+                <!-- Message -->
+                <p class="text-secondary mb-0 fs-6" id="savingModalMessage">
+                    Please wait while the system securely saves your application.
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="modal fade" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 p-4">
+
+                <div class="modal-header border-0 pb-2">
+                    <h5 class="modal-title fw-bold" id="wizardModalLabel" style="color:#0b4486;">
+                        Application Wizard
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="step-indicator" id="stepIndicator1">1</div>
+                    <div class="step-indicator" id="stepIndicator2">2</div>
+                    <div class="step-indicator" id="stepIndicator3">3</div>
+                </div>
+                <div class="progress mb-4" style="height:6px; border-radius:3px;">
+                    <div id="wizardProgress" class="progress-bar bg-primary" role="progressbar"
+                        style="width:33%; border-radius:3px;"></div>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="wizard-step" id="step1">
+                        <div class="mb-3">
+                            <label for="appName" class="form-label fw-semibold">Application Name</label>
+                            <input type="text" class="form-control form-control-lg" id="appName"
+                                placeholder="Enter application name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="appURL" class="form-label fw-semibold">Application URL</label>
+                            <input type="text" class="form-control form-control-lg" id="appURL"
+                                placeholder="Enter application URL">
+                        </div>
+                        <div class="mb-3">
+                            <label for="appDescription" class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control form-control-lg" id="appDescription" rows="3"
+                                placeholder="Brief description"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="wizard-step d-none" id="step2">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Add Module</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="txt_module_name" placeholder="Module Name">
+                                <input type="text" class="form-control" id="txt_link_url" placeholder="Module URL">
+                                <button class="btn btn-primary" type="button" onclick="addModule()">Add</button>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-hover" id="table_modules2"></table>
+                    </div>
+
+                    <div class="wizard-step d-none" id="step3">
+                        <h5 class="fw-bold mb-3">Summary</h5>
+                        <div id="summaryContent" class="text-start"></div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-0 justify-content-between">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" id="prevBtn"
+                        onclick="nextPrev(-1)" disabled>Previous</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="nextBtn"
+                        onclick="nextPrev(1)">Next</button>
+                </div>
+
+            </div>
+        </div>
+    </div> -->
+
+    <script>
+        function addModule() {
+            const module_name = document.getElementById("txt_module_name").value;
+            let link_url = document.getElementById("txt_link_url").value;
+
+            link_url = link_url.trim() === "" ? "N/A" : link_url;
+
+            if (module_name) {
+                const table = document.getElementById("table_modules");
+                const newRow = table.insertRow(-1);
+                newRow.innerHTML = `
+                    <td class="col-6 align-middle p-1 border-0">
+                      
+
+                       <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-0" role="alert">
+                        <div>
+                          <b>Module Name:</b> ${module_name}<br />
+                          <b>URL:</b> ${link_url}
+                        </div>
+
+                        <button
+                          class="btn btn-sm p-1 ms-auto"
+                          onclick="this.closest('tr').remove()"
+                          title="Remove Module"
+                        >
+                          <i class="bi bi-trash text-dark" style="font-size:18px;"></i>
+                        </button>
+                      </div>
+
+                      </td>
+                `;
+                document.getElementById("txt_module_name").value = "";
+                document.getElementById("txt_link_url").value = "";
+            }
+        }
+    </script>
+
+    <script>
+        function submitForm() {
+            const hidden_app_id = document.getElementById('hidden_app_id').value;
+            const function_mode = document.getElementById('function_mode').value;
+            const app_name = document.getElementById('appName').value.trim();
+            var alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+            const alertModalMsg = document.getElementById('lbl_alert_modal_message');
+            const appURL = document.getElementById('appURL').value.trim();
+            const appDescription = document.getElementById('appDescription').value.trim();
+            const appOwner = document.getElementById('appOwner').value.trim();
+            const app_status = document.getElementById('dd_status').value;
+
+            const errors = [];
+            const modules = getModulesFromTable();
+
+            if (!app_name)
+                errors.push("<span class='badge text-bg-danger text-white rounded-pill'>Application Name</span>");
+
+            if (!appURL)
+                errors.push("<span class='badge text-bg-danger text-white rounded-pill'>Application URL</span>");
+
+            if (!appDescription)
+                errors.push("<span class='badge text-bg-danger text-white rounded-pill'>Application Description.</span>")
+
+            if (!appOwner)
+                errors.push("<span class='badge text-bg-danger text-white rounded-pill'>Application Owner.</span>")
+
+            if (errors.length > 0) {
+                alertModalMsg.innerHTML = errors.join("\n");
+                alertModal.show();
+                return;
+            }
+
+            if (!confirm("Are you sure you want to save this application?")) {
+                return;
+            }
+
+            const savingModal = new bootstrap.Modal(document.getElementById('savingModal'));
+            savingModal.show();
+
+            const data = {
+                hidden_app_id: hidden_app_id,
+                function_mode: function_mode,
+                application_name: app_name,
+                application_link: appURL,
+                app_description: appDescription,
+                app_status: app_status,
+                owner: appOwner,
+                modules: modules,
+            };
+
+            console.log(data);
+
+            fetch("/submit-app-data", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            })
+                .then((response) => response.json())
+                .then((result) => {
+                    console.log(result);
+                    savingModal.hide();
+                    var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    alert("Something went wrong while saving.");
+                })
+
+
+            function getModulesFromTable() {
+                const table = document.getElementById("table_modules");
+                const modules = [];
+                const rows = table.getElementsByTagName("tr");
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName("td");
+                    if (cells.length === 0) continue;
+
+                    const text = cells[0].textContent;
+
+                    const moduleMatch = text.match(/Module Name:\s*(.+)/i);
+                    const urlMatch = text.match(/URL:\s*(.+)/i);
+
+                    // alert(`Module: ${moduleMatch}\nURL: ${urlMatch}`);
+
+                    if (moduleMatch && urlMatch) {
+                        modules.push({
+                            module_name: moduleMatch[1].trim(),
+                            link_url: urlMatch[1].trim(),
+                        });
+                    }
+                }
+
+                return modules;
+
+            }
+        }
+    </script>
+
+
+    <script>
+        // let currentStep = 1;
+
+        // function showStep(step) {
+        //     // Show current step
+        //     document.querySelectorAll('.wizard-step').forEach((el, idx) => el.classList.toggle('d-none', idx + 1 !== step));
+
+        //     // Update buttons
+        //     document.getElementById('prevBtn').disabled = step === 1;
+        //     document.getElementById('nextBtn').textContent = step === 3 ? 'Save' : 'Next';
+
+        //     // Update progress
+        //     const progress = step === 1 ? 33 : step === 2 ? 66 : 100;
+        //     const progressBar = document.getElementById('wizardProgress');
+        //     progressBar.style.width = progress + '%';
+
+        //     // Update step indicators
+        //     for (let i = 1; i <= 3; i++) {
+        //         const el = document.getElementById(`stepIndicator${i}`);
+        //         el.classList.remove('active', 'completed');
+        //         if (i < step) el.classList.add('completed');
+        //         else if (i === step) el.classList.add('active');
+        //     }
+
+        //     // Update summary on step 3
+        //     if (step === 3) {
+        //         const summaryDiv = document.getElementById('summaryContent');
+        //         const appName = document.getElementById('appName').value.trim();
+        //         const appURL = document.getElementById('appURL').value.trim();
+        //         const appDesc = document.getElementById('appDescription').value.trim();
+
+        //         const modulesTable = document.getElementById('table_modules2');
+        //         let modules = [];
+        //         for (let row of modulesTable.rows) {
+        //             modules.push(row.cells[0].innerText);
+        //         }
+
+        //         summaryDiv.innerHTML = `
+        //     <p><strong>Application Name:</strong> ${appName}</p>
+        //     <p><strong>Application URL:</strong> ${appURL}</p>
+        //     <p><strong>Description:</strong> ${appDesc}</p>
+        //     <p><strong>Modules:</strong><br>${modules.length ? modules.join('<br>') : 'No modules added'}</p>
+        // `;
+        //     }
+        // }
+
+        // function nextPrev(n) {
+        //     if (n === 1 && !validateForm()) return;
+
+        //     currentStep += n;
+
+        //     if (currentStep > 3) {
+        //         const modal = new bootstrap.Modal(document.getElementById('wizardModal'));
+        //         modal.hide();
+        //         showSavingModal();
+        //         setTimeout(() => {
+        //             hideSavingModal();
+        //             showModal("Application Saved", "Your application has been successfully saved.", "success");
+        //         }, 2000);
+        //         return;
+        //     }
+
+        //     showStep(currentStep);
+        // }
+
+        // function validateForm() {
+        //     if (currentStep === 1) {
+        //         const missing = [];
+        //         if (!document.getElementById('appName').value.trim()) missing.push("Application Name");
+        //         if (!document.getElementById('appURL').value.trim()) missing.push("Application URL");
+        //         if (!document.getElementById('appDescription').value.trim()) missing.push("Description");
+
+        //         if (missing.length > 0) {
+        //             const badges = missing.map(f => `<span class="badge bg-light text-dark border me-1">${f}</span>`).join(' ');
+        //             showModal("Required Field(s) Missing", `Please complete: <br>${badges}`, "error");
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
+
+        // document.getElementById('wizardModal').addEventListener('shown.bs.modal', () => {
+        //     currentStep = 1;
+        //     showStep(currentStep);
+        // });
+
+        // function addModule() {
+        //     const name = document.getElementById("txt_module_name").value.trim();
+        //     const url = document.getElementById("txt_link_url").value.trim() || "N/A";
+        //     if (!name) return;
+
+        //     const table = document.getElementById("table_modules2");
+        //     const row = table.insertRow();
+        //     row.innerHTML = `<td>${name} (${url}) <button class="btn btn-sm btn-outline-danger ms-2" onclick="this.closest('tr').remove()">Remove</button></td>`;
+
+        //     document.getElementById("txt_module_name").value = "";
+        //     document.getElementById("txt_link_url").value = "";
+        // }
+    </script>
+
+    {% endblock %}

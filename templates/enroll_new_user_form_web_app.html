@@ -1,0 +1,677 @@
+{% extends "base.html" %}
+
+{% block title %}Enroll New User Form{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-danger"><i class="bi bi-exclamation-circle-fill me-2"></i>Not Found</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3"><i class="bi bi-person-fill-x display-4 text-danger"></i></div>
+                    <h4 class="fw-bold">Employee ID not found</h4>
+                    <p class="text-muted">Please check the ID and try again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="refreshNotif" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-center py-5">
+                <div class="mb-4">
+                    <img src="{{ url_for('static', filename='images/search2.gif') }}" alt="Searching..."
+                        style="width: 50px;">
+                </div>
+                <h5 class="fw-semibold">Searching Employee</h5>
+                <p class="text-muted small">Please wait while we fetch the details...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-shield-exclamation display-3 text-warning mb-3"></i>
+                    <h4 class="fw-bold text-dark">Missing Information</h4>
+                    <p id="validationMessage" class="text-muted px-3"></p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold"
+                        data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-center g-3 mb-3 border-bottom pb-3">
+        <div class="col-md-4">
+            <h4 class="mb-0" style="color: #0b4486;"><i class="bi bi-person-add me-2"></i>Enroll User Wizard</h4>
+        </div>
+        <div class="col-md-8 text-md-end">
+            <a href="{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}"
+                class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-x-lg me-2"></i>Cancel
+            </a>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-0 rounded-3 shadow-sm" style="background-color: #e0e9f1;">
+        <div class="card-body">
+            <input type="hidden" id="lbl_app_id" value="{{ app_id }}" />
+            <small class="text-muted d-block">Selected Application</small>
+            <strong><i class="bi bi-windows me-2" style="color: #0b4486;"></i>{{ app_name }}</strong>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills nav-justified mb-4" id="wizardTab" role="tablist">
+        <li class="nav-item"><button class="nav-link active rounded-pill" id="step1-tab" type="button">1. Ticket
+                Info</button></li>
+        <li class="nav-item"><button class="nav-link rounded-pill" id="step2-tab" type="button">2. User Details</button>
+        </li>
+        <li class="nav-item"><button class="nav-link rounded-pill" id="step3-tab" type="button">3. Modules
+                Setup</button></li>
+        <li class="nav-item"><button class="nav-link rounded-pill" id="step4-tab" type="button">4. Summary</button></li>
+    </ul>
+
+    <div class="tab-content border rounded p-4 bg-white shadow-sm" id="wizardTabContent">
+        <div class="tab-pane fade show active" id="step1" role="tabpanel">
+            <div class="row justify-content-center py-5">
+                <div class="col-md-6 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-ticket-perforated-fill display-1 text-primary opacity-25"></i>
+                    </div>
+                    <h5>Enter Audit Information</h5>
+                    <p class="text-muted small">Please provide the Manage Engine ticket number associated with this
+                        request to proceed.</p>
+                    <div class="text-start mt-4">
+                        <label for="txt_ticket_num" class="form-label fw-bold">Source Ticket # <span
+                                class="text-danger">*</span></label>
+                        <input type="text" id="txt_ticket_num"
+                            class="form-control form-control-lg text-center shadow-sm"
+                            placeholder="Enter ME ticket number..." value="{{ ticket_num if ticket_num }}">
+                    </div>
+                </div>
+            </div>
+            <div class=" mt-4 text-end">
+                <button type="button" class="btn btn-primary px-4 rounded-pill btn-next">Next <i
+                        class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="step2" role="tabpanel">
+            <h5><i class="bi bi-person me-2"></i>User Details</h5>
+            <div class="row g-3 mt-2">
+                <div class="col-md-12">
+                    <label class="fw-bold">Search Employee ID</label>
+                    <div class="input-group mt-1">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i
+                                class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 rounded-end-pill"
+                            placeholder="Input ID and press Enter" id="employeeSearch"
+                            value="{{ employee_id if employee_id }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold">Full Name</label>
+                    <input readonly type="text" id="txt_full_name" class="form-control bg-light"
+                        value="{{ emp_full_name }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold">User Email</label>
+                    <input readonly type="text" id="txt_user_email" class="form-control bg-light"
+                        value="{{ emp_email }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold">Effective From <span class="text-danger">*</span></label>
+                    <input type="date" id="date_effective_from" class="form-control mt-1">
+                </div>
+                <div class="col-md-3">
+                    <label class="fw-bold">Effective To <span class="text-danger">*</span></label>
+                    <input type="date" id="date_effective_to" class="form-control mt-1" value="9999-12-31">
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold" for="dd_status">Status <span class="text-danger">*</span></label>
+                    <select class="form-select mt-1" id="dd_status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill btn-prev">Previous</button>
+                <button type="button" class="btn btn-primary px-4 rounded-pill btn-next">Next <i
+                        class="bi bi-arrow-right ms-2"></i></button>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="step3" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-grid me-2"></i>Module Configuration</h5>
+                <div class="input-group w-50">
+                    <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i
+                            class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 rounded-end-pill"
+                        placeholder="Search module name..." id="searchModule">
+                </div>
+            </div>
+            <div class="mt-3">
+                <table class="table table-sm table-hover table-bordered" id="tbl_modules">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th class="d-none">ID</th>
+                            <th>Module Name</th>
+                            <th>Module URL</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Permission</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if modules %}
+                        {% for module in modules %}
+                        <tr>
+                            <td class="d-none">{{ module.module_id }}</td>
+                            <td><b style="color: #0b4486;">{{ module.module_name }}</b></td>
+                            <td class="text-wrap"><small class="text-muted">{{ module.url }}</small></td>
+                            <td><input type="date" class="form-control form-control-sm module-date-from"></td>
+                            <td><input type="date" class="form-control form-control-sm module-date-to"
+                                    value="9999-12-31"></td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        Select roles
+                                    </button>
+
+                                    <ul class="dropdown-menu p-2" style="min-width: 180px">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="roleRead"
+                                                value="Read" />
+                                            <label class="form-check-label" for="roleRead">Reader</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="roleWrite"
+                                                value="Write" />
+                                            <label class="form-check-label" for="roleWrite">Can Write</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="roleDelete"
+                                                value="Delete" />
+                                            <label class="form-check-label" for="roleDelete">Can Delete</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="roleUpload"
+                                                value="Upload" />
+                                            <label class="form-check-label" for="roleUpload">Can Upload</label>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill btn-prev">Previous</button>
+                <button type="button" class="btn btn-primary px-4 rounded-pill btn-next" id="btnPreview">Preview
+                    Summary</button>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="step4" role="tabpanel">
+            <h5 class="mb-4"><i class="bi bi-check2-all me-2"></i>Final Review</h5>
+            <div class="card border-0 bg-light mb-4 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <small class="text-muted text-uppercase fw-bold d-block">Ticket Reference</small>
+                            <span id="sum_ticket" class="fs-5 fw-bold text-dark"></span>
+                        </div>
+                        <div class="col-md-3 border-start ps-4">
+                            <small class="text-muted text-uppercase fw-bold d-block">Employee Name</small>
+                            <span id="sum_user" class="fs-5 fw-bold text-dark"></span>
+                            <div class="pt-2 border-top mt-2">
+                                <small class="text-muted text-uppercase fw-bold d-block">Email Address:</small>
+                                <span id="sum_email" class="text-primary"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 border-start ps-4">
+                            <small class="text-muted text-uppercase fw-bold d-block">Global Effectivity</small>
+                            <span id="sum_dates" class="d-block fw-bold text-dark"></span>
+                        </div>
+                        <div class="col-md-3 border-start ps-4"> <small
+                                class="text-muted text-uppercase fw-bold d-block">User Status</small>
+                            <span id="sum_status" class="badge rounded-pill fs-6"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mb-3"><i class="bi bi-shield-lock me-2"></i>Module Access Requests</h6>
+            <div class="border rounded-3 bg-white" style="max-height: 350px; overflow-y: auto;">
+                <table class="table table-sm table-hover mb-0" id="summary_module_table">
+                    <thead>
+                        <tr>
+                            <th class="ps-3 py-2" style="background-color: #0b4486; color: white;">Module Name
+                            </th>
+                            <th class="py-2" style="background-color: #0b4486; color: white;">Permission</th>
+                            <th class="py-2 text-end pe-3" style="background-color: #0b4486; color: white;">
+                                Module
+                                Validity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sum_modules_list"></tbody>
+                </table>
+                <div id="no_modules_warning" class="text-center py-5 d-none">
+                    <i class="bi bi-exclamation-circle text-warning display-6"></i>
+                    <p class="mt-2 text-muted">No permissions selected.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between pt-3 border-top">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill btn-prev"><i
+                        class="bi bi-arrow-left me-2"></i>Go Back</button>
+                <button type="button" id="lnk_btn_save" class="btn btn-success px-5 rounded-pill shadow-sm"
+                    onclick="submitform()"><i class="bi bi-check-circle me-2"></i>Confirm & Enroll User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="savingModal" tabindex="-1" aria-labelledby="savingModalLabel" aria-hidden="true"
+    data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 text-center p-4">
+
+            <!-- Spinner -->
+            <div class="mb-3">
+                <div class="spinner-border text-primary" role="status" style="width:4rem; height:4rem;">
+                    <span class="visually-hidden">Saving...</span>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h4 class="fw-bold mb-2" id="savingModalTitle" style="color:#0b4486;">Saving User Access</h4>
+
+            <!-- Message -->
+            <p class="text-secondary mb-0 fs-6" id="savingModalMessage">
+                Please wait while the system securely saves user access.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+
+            <!-- Header -->
+            <div class="modal-header border-0 bg-success bg-opacity-10">
+                <h5 class="modal-title fw-semibold" id="successModalLabel">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    System Confirmation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-check2-circle display-3 text-success"></i>
+                </div>
+
+                <h4 class="fw-bold mb-2 text-success">
+                    User Access Saved Successfully
+                </h4>
+
+                <p class="text-muted mb-0 fs-6">
+                    The user access information has been securely stored in the system.
+                    You may proceed with additional configurations or close this window.
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <!-- <button type="button" class="btn btn-success rounded-pill px-4">
+                        View Details
+                    </button> -->
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. Navigation & Validation Logic ---
+    const wizardTabs = document.querySelectorAll('#wizardTab .nav-link');
+
+    function validateAndNavigate(targetTabId) {
+        const activeTab = document.querySelector('.nav-link.active');
+        const activeStepId = activeTab.getAttribute('id');
+        const steps = ['step1-tab', 'step2-tab', 'step3-tab', 'step4-tab'];
+        const currentIndex = steps.indexOf(activeStepId);
+        const targetIndex = steps.indexOf(targetTabId);
+
+        if (targetIndex <= currentIndex) {
+            showTab(targetTabId);
+            return;
+        }
+
+        // Validate Step 1: Ticket
+        if (currentIndex === 0 || targetIndex > 0) {
+            const ticket = document.getElementById('txt_ticket_num').value.trim();
+            if (!ticket) {
+                showValidationError("Please enter a <b>Ticket Number</b> before proceeding.");
+                return;
+            }
+        }
+
+        // Validate Step 2: User
+        if (currentIndex === 1 || targetIndex > 1) {
+            const email = document.getElementById('txt_user_email').value;
+            const start = document.getElementById('date_effective_from').value;
+            const end = document.getElementById('date_effective_to').value;
+            const status = document.getElementById('dd_status').value;
+            if (!email) {
+                showValidationError("Please <b>Search and Select an Employee</b> first.");
+                return;
+            }
+            if (!start || !end) {
+                showValidationError("Please set the <b>Global Effective Dates</b>.");
+                return;
+            }
+            if (!status) {
+                showValidationError("Please select a <b>Status</b> for this user.");
+                return;
+            }
+        }
+
+        // Validate Step 3: Modules
+        // Validate Step 3: Modules
+        if (currentIndex === 2 || targetIndex > 2) {
+            let moduleSelected = false;
+            let missingDates = false;
+            const rows = document.querySelectorAll('#tbl_modules tbody tr');
+
+            rows.forEach(row => {
+                // Check if any checkboxes are ticked in this row
+                const checkedCount = row.querySelectorAll('.form-check-input:checked').length;
+                const dFrom = row.querySelector('.module-date-from').value;
+                const dTo = row.querySelector('.module-date-to').value;
+
+                // Check for selections based on the count of checkboxes
+                if (checkedCount > 0) {
+                    moduleSelected = true;
+                    if (!dFrom || !dTo) {
+                        missingDates = true;
+                        row.classList.add('table-danger'); // Highlight row with missing dates
+                    } else {
+                        row.classList.remove('table-danger');
+                    }
+                }
+            });
+
+            if (!moduleSelected) {
+                showValidationError("Please select at least one <b>Module Permission</b>.");
+                return;
+            }
+            if (missingDates) {
+                showValidationError("Please set the <b>Validity Dates</b> for your selected modules.");
+                return;
+            }
+        }
+        showTab(targetTabId);
+    }
+
+    function showTab(tabId) {
+        document.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+        const targetBtn = document.getElementById(tabId);
+        targetBtn.classList.add('active');
+        const targetPaneId = targetBtn.getAttribute('id').replace('-tab', '');
+        const targetPane = document.getElementById(targetPaneId);
+        if (targetPane) targetPane.classList.add('show', 'active');
+        if (tabId === 'step4-tab') updateSummary();
+        document.getElementById('wizardTab').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showValidationError(message) {
+        document.getElementById('validationMessage').innerHTML = message;
+        new bootstrap.Modal(document.getElementById('validationModal')).show();
+    }
+
+    // --- 2. Event Listeners ---
+    wizardTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            validateAndNavigate(tab.id);
+        });
+    });
+
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const activeTab = document.querySelector('.nav-link.active');
+            const nextLi = activeTab.parentElement.nextElementSibling;
+            if (nextLi) validateAndNavigate(nextLi.querySelector('.nav-link').id);
+        });
+    });
+
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const activeTab = document.querySelector('.nav-link.active');
+            const prevLi = activeTab.parentElement.previousElementSibling;
+            if (prevLi) showTab(prevLi.querySelector('.nav-link').id);
+        });
+    });
+
+    document.getElementById('employeeSearch').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            let empId = this.value.trim();
+            let ticket = document.getElementById('txt_ticket_num').value.trim();
+            if (empId) {
+                new bootstrap.Modal(document.getElementById('refreshNotif')).show();
+                window.location.href = `{{ url_for('search_employee_id') }}?employee_id=${encodeURIComponent(empId)}&ticket_num=${encodeURIComponent(ticket)}&app_id={{ app_id }}&app_name={{ app_name }}&app_url={{ app_url }}`;
+            }
+        }
+    });
+
+    document.getElementById('searchModule').addEventListener('keyup', function () {
+        let term = this.value.toLowerCase();
+        document.querySelectorAll('#tbl_modules tbody tr').forEach(row => {
+            row.style.display = row.cells[1].textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
+
+    function updateSummary() {
+        // 1. Basic Info
+        document.getElementById('sum_ticket').innerText = document.getElementById('txt_ticket_num').value || "None";
+        document.getElementById('sum_user').innerText = document.getElementById('txt_full_name').value || "N/A";
+        document.getElementById('sum_email').innerText = document.getElementById('txt_user_email').value || "N/A";
+
+        const statusDropdown = document.getElementById('dd_status');
+        const statusVal = statusDropdown.value;
+        const statusDisplay = document.getElementById('sum_status');
+
+        statusDisplay.innerText = statusVal.toUpperCase();
+
+        if (statusVal === 'active') {
+            statusDisplay.className = "fs-6 fw-bold text-success";
+        } else {
+            statusDisplay.className = "fs-6 fw-bold text-danger";
+        }
+
+        // 2. Global Dates
+        const start = document.getElementById('date_effective_from').value;
+        const end = document.getElementById('date_effective_to').value;
+        document.getElementById('sum_dates').innerHTML = start && end
+            ? `<span class='badge text-bg-info'>${start}</span> to <span class='badge text-bg-info'>${end}</span>`
+            : "<span class='text-danger fw-bold'>Dates not set</span>";
+
+        // 3. Modules Table
+        const container = document.getElementById('sum_modules_list');
+        container.innerHTML = '';
+        let hasSelection = false;
+
+        document.querySelectorAll('#tbl_modules tbody tr').forEach(row => {
+            // Find all checked boxes in THIS specific row
+            const checkedBoxes = Array.from(row.querySelectorAll('.form-check-input:checked'));
+
+            if (checkedBoxes.length > 0) {
+                hasSelection = true;
+
+                const name = row.cells[1].innerText;
+                const mStart = row.querySelector('.module-date-from').value;
+                const mEnd = row.querySelector('.module-date-to').value;
+
+                // Join permissions into a string (e.g., "Read, Write")
+                const permsString = checkedBoxes.map(cb => cb.value).join(', ');
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td class="ps-3 py-3 fw-bold">${name}</td>
+                <td class='align-middle'>
+                    <span class="badge bg-primary rounded-pill px-3" style="font-size: 12px;">${permsString}</span>
+                </td>
+                <td class="py-3 text-end text-muted pe-3 small" style="font-size: 14px;">
+                    <i class="bi bi-calendar-check me-1"></i>${mStart} — ${mEnd}
+                </td>`;
+                container.appendChild(tr);
+            }
+        });
+
+        // Toggle Visibility of "No Modules" warning
+        document.getElementById('no_modules_warning').classList.toggle('d-none', hasSelection);
+        document.querySelector('#summary_module_table thead').classList.toggle('d-none', !hasSelection);
+    }
+
+    // --- 3. Submission Logic ---
+    function submitform() {
+        const app_id_val = document.getElementById("lbl_app_id").value;
+
+        // FIX: Remove .value because these are JS strings from Jinja, not inputs
+        const txt_app_name = {{ app_name | tojson
+    }};
+    const txt_url = {{ app_url | tojson }};
+
+    const txt_user_email = document.getElementById("txt_user_email").value.trim();
+    const txt_full_name = document.getElementById("txt_full_name").value.trim();
+    const txt_ticket_num = document.getElementById("txt_ticket_num").value.trim();
+    const date_from = document.getElementById("date_effective_from").value;
+    const date_to = document.getElementById("date_effective_to").value;
+
+    if (!confirm("Are you sure you want to save this user access?")) {
+        return;
+    }
+
+    const savingModal = new bootstrap.Modal(document.getElementById("savingModal"));
+    savingModal.show();
+
+    const successModal = new bootstrap.Modal(document.getElementById("successModal"));
+
+    const data = {
+        header_data: {
+            app_id: app_id_val,
+            email: txt_user_email,
+            status: "active",
+            effective_from: date_from,
+            effective_to: date_to,
+            created_by: "admin",
+            ticket_number: txt_ticket_num
+        },
+        access_data: {
+            line_data: getGridDetails()
+        }
+    };
+
+    console.log("RAW JSON DATA:", data)
+
+    fetch("/submit-webapp-user-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    })
+        .then(response => response.json())
+        .then(result => {
+            savingModal.hide();
+            successModal.show();
+            window.location.href = "{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            savingModal.hide();
+            alert("Something went wrong while saving.");
+        });
+    }
+
+    function getGridDetails() {
+        const rows = document.querySelectorAll("#tbl_modules tbody tr");
+
+        return Array.from(rows).map(row => {
+            const cells = row.cells;
+
+            const rowPermissions = Array.from(row.querySelectorAll('.form-check-input:checked'))
+                .map(cb => cb.value);
+
+            return {
+                module_id: cells[0].innerText.trim() || "",
+                module_name: cells[1].innerText.trim() || "",
+                module_url: cells[2].innerText.trim() || "",
+                effective_from: row.querySelector(".module-date-from")?.value || "",
+                effective_to: row.querySelector(".module-date-to")?.value || "",
+                permissions: rowPermissions
+            };
+
+        })
+            .filter(item => item.permissions.length > 0);
+
+    }
+
+    window.addEventListener('load', () => {
+        {% if emp_email %} showTab('step2-tab'); {% endif %}
+        {% if employee_not_found %} new bootstrap.Modal(document.getElementById('errorModal')).show(); {% endif %}
+    });
+</script>
+
+<style>
+    /* Styling for High Visibility and Wizard UI */
+    .nav-pills .nav-link {
+        color: #495057 !important;
+        background: #ffffff;
+        margin: 0 5px;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        padding: 10px 20px;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #0b4486 !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(11, 68, 134, 0.25);
+    }
+
+    .tab-pane h5 {
+        padding-left: 10px;
+        color: #0b4486;
+        font-weight: bold;
+    }
+
+    .table-danger {
+        background-color: #f8d7da !important;
+    }
+</style>
+
+{% endblock %}

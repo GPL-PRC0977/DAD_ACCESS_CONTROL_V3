@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    {% block title %}DAD Application Access Control Center{% endblock %}
+  </title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='custom_css/style.css') }}" />
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+  <script src="stylesheet" href="{{ url_for('static', filename='bootstrap-icons/font/bootstrap-icons.css') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons/font/bootstrap-icons.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
+  <style>
+    body {
+      font-family: "Roboto", Arial, sans-serif !important;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+      <a class="navbar-brand p-0 text-white" href="#">
+        <img src="{{ url_for('static', filename='images/dad.png') }}" height="23" class="me-2"
+          style="margin-top: -5px" />
+        Access Control Center
+      </a>
+      <button class="navbar-toggler rounded-0 border-0 text-white bg-transparent" type="button"
+        data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        ☰
+      </button>
+      <div class="collapse navbar-collapse p-0" id="navbarNav">
+        <ul class="navbar-nav ms-auto" style="line-height: 1.3">
+          <li class="nav-item">
+            <a class="nav-link show-modal" href="/">
+              <i class="bi bi-house"></i>
+              Home</a>
+          </li>
+          <li>
+            <a class="nav-link show-modal" href="/observability">
+              <i class="bi bi-lightning-charge"></i>
+              Observability</a>
+          </li>
+          <li class="nav-item me-3">
+            <a href="/activity_logs" class="nav-link"><i class="bi bi-clock-history"></i> Activity Logs</a>
+          </li>
+          <li>
+            <div class="dropdown ms-auto">
+              <a href="#" class="d-flex align-items-center text-decoration-none text-white" id="userDropdown"
+                role="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
+                aria-expanded="false">
+                <i class="bi bi-person-circle me-1 text-white" style="font-size: 25px"></i>
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header p-2 bg-light-subtle" style="border-bottom: 1px solid #eeeeee">
+      {% if picture %}
+      <img src="{{ user[0]['picture'] }}" alt="User Picture" class="img-fluid rounded-circle"
+        style="width: 60px; height: 60px" />
+      {% else %}
+      <svg version="1.1" fill="#515151" id="Layer_1" x="0px" y="0px" width="60px" height="60px"
+        viewBox="0 0 143.9 142.9" style="enable-background: new 0 0 143.9 142.9" focusable="false" xml:space="preserve">
+        <g id="icomoon-ignore"></g>
+        <g>
+          <path
+            d="M72,0.9C33.2,0.9,1.4,32.7,1.4,71.5S33.2,142,72,142s70.5-31.7,70.5-70.5S110.8,0.9,72,0.9z M116.9,117.9c-2.3-13.9-30.6-26.3-45.1-26.3c-14.4,0-42.5,12.3-45.1,26c-11.2-11.4-20-29-20-46.2C6.7,36.5,37,6.2,72,6.2c34.9,0,65.3,30.3,65.3,65.3C137.2,88.8,128.2,106.5,116.9,117.9z">
+          </path>
+        </g>
+        <path d="M95.4,62.5c0,12.5-10.1,22.6-22.6,22.6s-22.6-10-22.6-22.6s10.1-22.6,22.6-22.6S95.4,50,95.4,62.5z">
+        </path>
+      </svg>
+      {% endif %}
+
+      <span class="ms-2">
+        <!-- FULLNAME -->
+        <span style="font-size: 20px" class="text-dark-subtle">{{ session.get('user', {}).get('name', 'No Email Found')
+          }}</span>
+        <br />
+        <!-- USER EMAIL -->
+        <span class="text-dark-subtle"><i class="bi bi-envelope me-2"></i>{{ session.get('user', {}).get('email', 'No
+          Email Found') }}</span>
+      </span>
+
+      <button type="button" class="btn-close me-2 text-dark" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="mb-3">
+        <h6 class="text-uppercase text-secondary">
+          <i class="bi bi-person-circle me-1"></i>Account Details
+        </h6>
+        <div class="ms-2">
+          <p class="mb-1 text-muted">
+            <i class="bi bi-person-badge me-2"></i>
+            <strong>Role:</strong> {{ session.get('user',{}).get('role_type','Guest') }}
+          </p>
+          <p class="mb-1 text-muted">
+            <i class="bi bi-check-circle me-2"></i><strong>Status:</strong>
+            <span class="text-success">
+              {% if status == 'True' %} Active {% else %} Inactive {% endif %}
+            </span>
+          </p>
+          <p class="mb-1 text-muted d-none">
+            <i class="bi bi-clock me-2"></i><strong>Last Login:</strong> 2023-10-01 12:34:56
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-5 mb-5">
+        <h6 class="text-uppercase text-secondary">
+          <i class="bi bi-gear me-1"></i>Preferences
+        </h6>
+        <div class="ms-2">
+          <p class="mb-1 text-muted">
+            <i class="bi bi-sliders me-2"></i>Manage your settings and
+            preferences here.
+          </p>
+
+          <div class="dropdown mb-3 floa">
+            <button class="btn btn-outline-secondary dropdown-toggle btn-sm absol" type="button" id="themeDropdown"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-palette me-1"></i> Theme
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="themeDropdown">
+              <li>
+                <button class="dropdown-item" data-bs-theme-value="light">
+                  <i class="bi bi-sun me-2"></i>Light
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" data-bs-theme-value="dark">
+                  <i class="bi bi-moon me-2"></i>Dark
+                </button>
+              </li>
+              <li>
+                <button class="dropdown-item" data-bs-theme-value="auto">
+                  <i class="bi bi-circle-half me-2"></i>Auto
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {% if role_type == 'Super Administrator' %}
+      <div class="mt-5 mb-5">
+        <h6 class="text-uppercase text-secondary">
+          <i class="bi bi-people-fill"></i> Manage Admin Users
+        </h6>
+        <a href="/manage_users" id="lnk_manage_user" class="btn btn-outline-secondary btn-sm show-modal">
+          <i class="bi bi-gear"></i> Manage
+        </a>
+      </div>
+      {% endif %}
+
+      <div class="mb-5">
+        <h6 class="text-uppercase text-secondary">
+          <i class="bi bi-box-arrow-right me-1"></i>Logout
+        </h6>
+        <div class="ms-2">
+          <p class="mb-1 text-muted">
+            <i class="bi bi-info-circle me-2"></i>To log out, click the button
+            below.
+          </p>
+          <p class="mb-1 text-muted">
+            <i class="bi bi-hand-thumbs-up me-2"></i>Thank you for using our
+            app!
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="offcanvas-footer p-2 text-end bg-custom-light">
+      <a href="/logout" class="btn btn-pro-white btn-sm rounded-0">Logout <i class="bi bi-power ms-2"></i></a>
+    </div>
+    <div class="offcanvas-footer p-2 border-top">
+      <span>
+        <a class="navbar-brand p-0 text-dark-subtle" href="#">
+          <!-- Light theme logo -->
+          <img src="{{ url_for('static', filename='images/dad_black.png') }}" height="23"
+            class="me-2 d-inline dark-mode-hidden" style="margin-top: -5px" />
+          <!-- Dark theme logo -->
+          <img src="{{ url_for('static', filename='images/dad.png') }}" height="23"
+            class="me-2 d-none dark-mode-visible" style="margin-top: -5px" />
+          Access Control Center
+        </a>
+      </span>
+      <span class="text-muted float-end">Version 1.0.0</span>
+    </div>
+  </div>
+</body>
+
+</html>
