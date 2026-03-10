@@ -59,7 +59,8 @@
             <h4 class="mb-0" style="color: #0b4486;"><i class="bi bi-person-add me-2"></i>Enroll User Wizard</h4>
         </div>
         <div class="col-md-8 text-md-end">
-            <a href="{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}"
+            <a id="btn_cancel"
+                href="{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}"
                 class="btn btn-outline-secondary rounded-pill">
                 <i class="bi bi-x-lg me-2"></i>Cancel
             </a>
@@ -105,9 +106,13 @@
                     <div class="text-start mt-4">
                         <label for="txt_ticket_num" class="form-label fw-bold">Source Ticket # <span
                                 class="text-danger">*</span></label>
-                        <input type="text" id="txt_ticket_num"
-                            class="form-control form-control-lg text-center shadow-sm"
-                            placeholder="Enter ME ticket number..." value="{{ ticket_num if ticket_num }}">
+                        <input type="text" id="txt_ticket_num" class="form-control form-control-lg shadow-sm"
+                            placeholder="Enter ME ticket number..." value="">
+
+                        <label for="txt_reason" class="form-label fw-bold mt-2">Request Reason <span
+                                class="text-danger">*</span></label>
+                        <textarea name="txt_reason" id="txt_reason" class="form-control form-control-lg shadow-sm"
+                            placeholder="Enter request reason here..."></textarea>
                     </div>
                 </div>
             </div>
@@ -133,27 +138,22 @@
                 <div class="col-md-6">
                     <label class="fw-bold">Full Name</label>
                     <input readonly type="text" id="txt_full_name" class="form-control bg-light"
-                        value="{{ emp_full_name }}">
+                        value="{{ access_details[0].full_name }}">
                 </div>
                 <div class="col-md-6">
                     <label class="fw-bold">User Email</label>
                     <input readonly type="text" id="txt_user_email" class="form-control bg-light"
-                        value="{{ emp_email }}">
-                </div>
-                <div class="col-md-3">
-                    <label class="fw-bold">Effective From <span class="text-danger">*</span></label>
-                    <input type="date" id="date_effective_from" class="form-control mt-1">
-                </div>
-                <div class="col-md-3">
-                    <label class="fw-bold">Effective To <span class="text-danger">*</span></label>
-                    <input type="date" id="date_effective_to" class="form-control mt-1" value="9999-12-31">
+                        value="{{ user_email }}">
                 </div>
                 <div class="col-md-6">
-                    <label class="fw-bold" for="dd_status">Status <span class="text-danger">*</span></label>
-                    <select class="form-select mt-1" id="dd_status">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                    <label class="fw-bold">Effective From <span class="text-danger">*</span></label>
+                    <input type="date" id="date_effective_from" class="form-control mt-1"
+                        value="{{ access_details[0].effective_from }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="fw-bold">Effective To <span class="text-danger">*</span></label>
+                    <input type="date" id="date_effective_to" class="form-control mt-1"
+                        value="{{ access_details[0].effective_to }}">
                 </div>
             </div>
             <div class="mt-4 d-flex justify-content-between">
@@ -186,20 +186,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% if modules %}
-                        {% for module in modules %}
+                        {% if access_details and access_details[0].module_names %}
+                        {% for module in access_details[0].module_names %}
                         <tr>
-                            <td class="d-none">{{ module.module_id }}</td>
+                            <td class="d-none"></td>
                             <td><b style="color: #0b4486;">{{ module.module_name }}</b></td>
-                            <td class="text-wrap"><small class="text-muted">{{ module.url }}</small></td>
-                            <td><input type="date" class="form-control form-control-sm module-date-from"></td>
+                            <td class="text-wrap"><small class="text-muted">{{ module.master_url }}</small></td>
+                            <td><input type="date" class="form-control form-control-sm module-date-from"
+                                    value="{{ module.effective_from }}"></td>
                             <td><input type="date" class="form-control form-control-sm module-date-to"
-                                    value="9999-12-31"></td>
+                                    value="{{ module.effective_to }}" value="9999-12-31"></td>
                             <td>
                                 <select class="form-select form-select-sm module-permission">
                                     <option value="" selected></option>
-                                    <option value="Viewer">Viewer</option>
-                                    <option value="Editor">Editor</option>
+                                    <option value="Viewer" {% if module.requested_permission=='Viewer' %}selected{%
+                                        endif %}>Viewer</option>
+                                    <option value="Editor" {% if module.requested_permission=='Editor' %}selected{%
+                                        endif %}>Editor</option>
                                 </select>
                             </td>
                         </tr>
@@ -223,6 +226,10 @@
                         <div class="col-md-4">
                             <small class="text-muted text-uppercase fw-bold d-block">Ticket Reference</small>
                             <span id="sum_ticket" class="fs-5 fw-bold text-dark"></span>
+                            <div class="pt-2 border-top mt-2">
+                                <small class="text-muted text-uppercase fw-bold d-block">Request Reason:</small>
+                                <span id="sum_request_reason" class="text-primary"></span>
+                            </div>
                         </div>
                         <div class="col-md-4 border-start ps-4">
                             <small class="text-muted text-uppercase fw-bold d-block">Employee Name</small>
@@ -361,6 +368,12 @@
                 showValidationError("Please enter a <b>Ticket Number</b> before proceeding.");
                 return;
             }
+
+            const reason = document.getElementById('txt_reason').value.trim();
+            if (!reason) {
+                showValidationError("Please provide a <b>Request Reason</b> before proceeding.");
+                return;
+            }
         }
 
         // Validate Step 2: User
@@ -473,6 +486,7 @@
         document.getElementById('sum_ticket').innerText = document.getElementById('txt_ticket_num').value || "None";
         document.getElementById('sum_user').innerText = document.getElementById('txt_full_name').value;
         document.getElementById('sum_email').innerText = document.getElementById('txt_user_email').value;
+        document.getElementById('sum_request_reason').innerText = document.getElementById('txt_reason').value;
         const start = document.getElementById('date_effective_from').value;
         const end = document.getElementById('date_effective_to').value;
         document.getElementById('sum_dates').innerHTML = `<span class='badge text-bg-info'>${start}</span> to <span class='badge text-bg-info'>${end}</span>`;
@@ -576,7 +590,12 @@
             savingModal.hide();
             // alert("Enrollment Successful!");
             successModal.show();
-            window.location.href = "{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}";
+            const btn_save_confirm = document.getElementById('lnk_btn_save');
+            btn_save_confirm.classList.add('d-none')
+            // window.location.href = "{{ url_for('enroll_user_home', app_id=app_id, app_name=app_name, app_url=app_url) }}";
+
+            const btn_cancel = document.getElementById('btn_cancel');
+            btn_cancel.innerHTML = '<i class="bi bi-x-lg me-2"></i>Close';
         })
         .catch(error => {
             console.error("Error:", error);

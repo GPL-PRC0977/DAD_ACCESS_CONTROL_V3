@@ -7,7 +7,7 @@ import sys
 from authlib.integrations.flask_client import OAuth
 from google.cloud import secretmanager
 import secrets
-from functions import get_employee_by_id, get_home_dashboard_data, get_user_dashboard_data, get_modules, fn_copy_access, validate_user, save_application, save_user_access, get_application_details,save_webapp_user_access
+from functions import get_employee_by_id, get_home_dashboard_data, get_user_dashboard_data, get_modules, fn_copy_access, validate_user, save_application, save_user_access, get_application_details,save_webapp_user_access, get_user_access_details
 from security_middleware import rasp_check_and_block
 
 load_dotenv()
@@ -333,7 +333,50 @@ def enroll_user_form():
                            app_url=app_url, 
                            modules=modules)
 
-from flask import request
+@app.route('/manage_user_access_form')
+def manage_user_access_form():
+    full_name = "Gilbert Laman"
+    role_type = "Admin"
+    status = "True"
+    user = {
+        "email": "gilbert.laman@priemrgrp.com"
+    }
+    
+    app_id = request.args.get('app_id')
+    app_name = request.args.get('app_name')
+    app_url = request.args.get('app_url')
+    # modules = get_modules(app_id)
+    user_email = request.args.get('user_email')
+
+    access_details = get_user_access_details(app_id, user_email)
+    print(f"Access Details: {access_details}")
+
+    goto_page = None
+
+    if "https://drive.google.com/drive/" in app_url:
+        # ? go to enrollmenr form for google sheets app
+        print("Type of app: Google sheet app")
+        goto_page = "manage_user_access_form.html" 
+    elif "https://lookerstudio.google.com/" in app_url:
+        # ? go to enrollment form for looker studio
+        print("Type of app: Looker studio app")
+        goto_page = "" 
+    else:
+        # ? go to enrollment form for web applications
+        print("Type of app: Web app")
+        goto_page = "enroll_new_user_form_web_app.html" 
+ 
+    return render_template(goto_page, 
+                           full_name=full_name, 
+                           role_type=role_type, 
+                           user=user, 
+                           status=status, 
+                           employees="", 
+                           app_id=app_id, 
+                           app_name=app_name, 
+                           app_url=app_url, 
+                           user_email=user_email,
+                           access_details=access_details)
 
 @app.route('/search_employee_id')
 def search_employee_id():
@@ -346,20 +389,17 @@ def search_employee_id():
     emp_email = ""
     employee_not_found = False
     
-    # Get employee data based on employee_id
     if employee_id:
         employee_master_data = get_employee_by_id(employee_id)
     else:
         employee_master_data = None
         print("No employee_id provided.")
     
-    # Check if the employee data is valid and not empty
     if not employee_master_data:
         employee_not_found = True
     elif "message" in employee_master_data and employee_master_data["message"] == "No data found":
         employee_not_found = True
     else:
-        # Assuming employee_master_data is a list of dictionaries
         employee = employee_master_data[0] if len(employee_master_data) > 0 else None
         if employee:
             emp_full_name = employee.get('FullName', '')
@@ -374,19 +414,15 @@ def search_employee_id():
         "email": "gilbert.laman@priemrgrp.com"
     }
 
-    # Pass the flag to the template
     modules = get_modules(app_id)
 
     if "https://drive.google.com/drive/" in app_url:
-        #go to enrollmenr form for google sheets app
         print("Type of app: Google sheet app")
         goto_page = "enroll_new_user_form.html" 
     elif "https://lookerstudio.google.com/" in app_url:
-        #go to enrollment form for looker studio
         print("Type of app: Looker studio app")
         goto_page = "" 
     else:
-        #go to enrollment form for web applications
         print("Type of app: Web app")
         goto_page = "enroll_new_user_form_web_app.html" 
 
@@ -399,7 +435,11 @@ def search_employee_id():
                            emp_full_name=emp_full_name, 
                            emp_email=emp_email,
                            ticket_num = ticket_num,
-                           employee_not_found=employee_not_found,app_id=app_id, app_name=app_name, app_url=app_url, modules=modules)
+                           employee_not_found=employee_not_found,
+                           app_id=app_id, 
+                           app_name=app_name, 
+                           app_url=app_url, 
+                           modules=modules)
 
 
 @app.route('/copy_access')

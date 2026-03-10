@@ -431,3 +431,28 @@ def get_application_details(app_id):
     except requests.exceptions.RequestException as e:
         print(f"Request Error: {e}")
         return None
+
+def get_user_access_details(app_id, email):
+    headers = {
+        'X-API-KEY': key,
+        'Content-Type': 'application/json'
+    }
+
+    params = {"app_id": app_id, "email": email}
+    url = f"{domain}/get_user_access_details"
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+
+            print(f"Data: {data}")
+
+            return data
+        else:
+            print(f"Failed. Status: {response.status_code}, Response: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Request Error: {e}")
+        return None
